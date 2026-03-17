@@ -73,10 +73,10 @@ This extension uses Chrome Manifest V3 and is loaded as an internal unpacked ext
 
 ---
 
-## 👨‍💻 Author
+## 👨‍💻 Team & Credits
 
-**Mentari Rahman**
-*Canva Link Building Team — H1 2026 AI Challenge*
+- **Mentari Rahman** — Lead Developer / Technical Creator (Architecture, Engineering, and AI Integration)
+- **Gelo Amonelo** — Ideation & Project Team Member
 
 ---
 
