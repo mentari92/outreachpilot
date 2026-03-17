@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OutreachPilot</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo">OutreachPilot <span class="attribution">by Mentari & Gelo</span></div>
+        <button id="settings-btn" title="Settings">⚙️</button>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="manual">Manual</button>
+        <button class="tab-btn" data-tab="autonomous">Autonomous</button>
+    </div>
+
+    <main id="manual" class="tab-content active">
+        <div id="scan-status" class="status-box">
+            <p>Analyzing website...</p>
+            <div class="spinner"></div>
+        </div>
+
+        <div id="results" class="hidden">
+            <!-- Results will be injected here -->
+        </div>
+    </main>
+
+    <main id="autonomous" class="tab-content">
+        <textarea id="url-list" placeholder="Paste URLs here (one per line)..."
+            style="width: 100%; height: 120px; margin-bottom: 10px;"></textarea>
+        <button id="run-agent" class="primary-btn">Run Agent</button>
+        <div id="agent-status" style="margin-top: 15px; font-weight: bold; color: var(--primary);"></div>
+        <div id="agent-results" style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;"></div>
+    </main>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

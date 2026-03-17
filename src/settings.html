@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>OutreachPilot Settings</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00c4cc;
+            --secondary: #7d2ae8;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
+
+        body {
+            padding: 30px;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            margin-bottom: 25px;
+            border: 1px solid #f1f5f9;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        .field {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background-color: #fdfdfd;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(0, 196, 204, 0.1);
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(125, 42, 232, 0.25);
+            transition: all 0.2s;
+            margin-top: 10px;
+            margin-bottom: 40px;
+        }
+
+        button:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(125, 42, 232, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 6px;
+        }
+
+        .model-id {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--secondary);
+            border-style: dashed;
+            background-color: #fafaff;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>OutreachPilot Settings</h1>
+
+    <div class="section">
+        <h2>AI Configuration</h2>
+        <div class="field">
+            <label>Default Model</label>
+            <select id="default-model">
+                <option value="gemini">Gemini</option>
+                <option value="openai">OpenAI</option>
+                <option value="claude">Anthropic Claude</option>
+                <option value="grok">Grok (xAI)</option>
+                <option value="openrouter">OpenRouter</option>
+                <option value="deepseek">DeepSeek</option>
+                <option value="huggingface">Hugging Face</option>
+                <option value="straico">Straico</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Gemini API Key</label>
+            <input type="password" id="gemini-key" placeholder="AIza...">
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <input type="text" id="gemini-model" class="model-id" style="margin-top:0; flex:1;"
+                    placeholder="Default: gemini-2.0-flash" list="gemini-model-list">
+                <datalist id="gemini-model-list"></datalist>
+                <button type="button" data-provider="gemini"
+                    style="width:auto; padding:8px 14px; font-size:0.8rem; margin:0; box-shadow:none;">
+                    Fetch Models
+                </button>
+            </div>
+            <p class="hint" id="gemini-model-status"></p>
+        </div>
+
+        <div class="field">
+            <label>OpenAI API Key</label>
+            <input type="password" id="openai-key" placeholder="sk-...">
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <input type="text" id="openai-model" class="model-id" style="margin-top:0; flex:1;"
+                    placeholder="Default: gpt-4o-mini" list="openai-model-list">
+                <datalist id="openai-model-list"></datalist>
+                <button type="button" data-provider="openai"
+                    style="width:auto; padding:8px 14px; font-size:0.8rem; margin:0; box-shadow:none;">
+                    Fetch Models
+                </button>
+            </div>
+            <p class="hint" id="openai-model-status"></p>
+        </div>
+
+        <div class="field">
+            <label>Anthropic API Key</label>
+            <input type="password" id="claude-key" placeholder="sk-ant-...">
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <input type="text" id="claude-model" class="model-id" style="margin-top:0; flex:1;"
+                    placeholder="Default: claude-3-5-sonnet-latest" list="claude-model-list">
+                <datalist id="claude-model-list"></datalist>
+                <button type="button" data-provider="claude"
+                    style="width:auto; padding:8px 14px; font-size:0.8rem; margin:0; box-shadow:none;">
+                    Fetch Models
+                </button>
+            </div>
+            <p class="hint" id="claude-model-status"></p>
+        </div>
+
+        <div class="field">
+            <label>Grok (xAI) API Key</label>
+            <input type="password" id="grok-key" placeholder="xai-...">
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <input type="text" id="grok-model" class="model-id" style="margin-top:0; flex:1;"
+                    placeholder="Default: grok-beta" list="grok-model-list">
+                <datalist id="grok-model-list"></datalist>
+                <button type="button" data-provider="grok"
+                    style="width:auto; padding:8px 14px; font-size:0.8rem; margin:0; box-shadow:none;">
+                    Fetch Models
+                </button>
+            </div>
+            <p class="hint" id="grok-model-status"></p>
+        </div>
+
+        <div class="field">
+            <label>OpenRouter API Key</label>
+            <input type="password" id="openrouter-key" placeholder="sk-or-...">
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <input type="text" id="openrouter-model" class="model-id" style="margin-top:0; flex:1;"
+                    placeholder="Default: auto (openai/gpt-4o-mini)" list="openrouter-model-list">
+                <datalist id="openrouter-model-list"></datalist>
+                <button type="button" data-provider="openrouter"
+                    style="width:auto; padding:8px 14px; font-size:0.8rem; margin:0; box-shadow:none;">
+                    Fetch Models
+                </button>
+            </div>
+            <p class="hint" id="openrouter-model-status"></p>
+        </div>
+
+        <div class="field">
+            <label>DeepSeek API Key</label>
+            <input type="password" id="deepseek-key" placeholder="sk-...">
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <input type="text" id="deepseek-model" class="model-id" style="margin-top:0; flex:1;"
+                    placeholder="Default: deepseek-chat" list="deepseek-model-list">
+                <datalist id="deepseek-model-list"></datalist>
+                <button type="button" data-provider="deepseek"
+                    style="width:auto; padding:8px 14px; font-size:0.8rem; margin:0; box-shadow:none;">
+                    Fetch Models
+                </button>
+            </div>
+            <p class="hint" id="deepseek-model-status"></p>
+        </div>
+
+        <div class="field">
+            <label>Hugging Face Token</label>
+            <input type="password" id="huggingface-key" placeholder="hf_...">
+            <input type="text" id="huggingface-model" class="model-id"
+                placeholder="Default: mistralai/Mistral-7B-Instruct-v0.3">
+            <p class="hint">Enter model name manually from huggingface.co/models.</p>
+        </div>
+
+        <div class="field">
+            <label>Straico API Key</label>
+            <input type="password" id="straico-key" placeholder="Enter Straico API Key">
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <input type="text" id="straico-model" class="model-id" style="margin-top:0; flex:1;"
+                    placeholder="Default: openai/gpt-4o-mini" list="straico-model-list">
+                <datalist id="straico-model-list"></datalist>
+                <button type="button" data-provider="straico"
+                    style="width:auto; padding:8px 14px; font-size:0.8rem; margin:0; box-shadow:none;">
+                    Fetch Models
+                </button>
+            </div>
+            <p class="hint" id="straico-model-status"></p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Personalization</h2>
+        <div class="field">
+            <label>Output Language</label>
+            <input type="text" id="email-language" placeholder="e.g. English, Indonesian, Tagalog, Spanish...">
+            <p class="hint">Type ANY language for the generated outreach email.</p>
+        </div>
+        <div class="field">
+            <label>Your Name</label>
+            <input type="text" id="user-name" placeholder="Mentari Rahman">
+        </div>
+        <div class="field">
+            <label>Email Signature</label>
+            <textarea id="user-signature"
+                placeholder="Best regards,&#10;Mentari Rahman&#10;SEO Outreach Specialist"></textarea>
+        </div>
+    </div>
+
+    <button id="save">Save All Settings</button>
+
+    <script src="settings.js"></script>
+</body>
+
+</html>

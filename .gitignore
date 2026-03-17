@@ -1,0 +1,30 @@
+# ============================================
+# OutreachPilot — .gitignore
+# ============================================
+
+# --- SECRETS (JANGAN PERNAH PUSH) ---
+.env
+*.env
+Brain/.env
+
+# --- macOS ---
+.DS_Store
+**/.DS_Store
+*.DS_Store
+
+# --- Claude Code ---
+.claude/
+
+# --- Bmad (build orchestration framework, bukan bagian extension) ---
+Bmad/
+Bmad-output/
+.agent/
+
+# --- Editor & IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Logs ---
+*.log
