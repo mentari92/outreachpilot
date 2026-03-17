@@ -4,7 +4,7 @@
 
 *Created by Mentari Rahman*
 
-> 🏢 **Note:** This is a proprietary internal project created by Mentari Rahman during their time at Canva for the H1 2026 AI Challenge.
+> 🏢 **Note:** This is a proprietary internal project created by Mentari Rahman during her time at Canva for the H1 2026 AI Challenge.
 
 ---
 
