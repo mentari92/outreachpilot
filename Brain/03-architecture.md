@@ -53,12 +53,12 @@ Injected into every webpage. Responsible for:
 
 ### background.js (Service Worker)
 Responsible for all external API calls and autonomous orchestration:
-- **9 LLM Provider classes:** BaseProvider, GeminiProvider, OpenAIProvider, ClaudeProvider, GrokProvider, DeepSeekProvider, OpenRouterProvider, HuggingFaceProvider, StraicoProvider
+- **10 LLM Provider classes:** BaseProvider, GeminiProvider, OpenAIProvider, ClaudeProvider, GrokProvider, **GroqProvider**, DeepSeekProvider, OpenRouterProvider, HuggingFaceProvider, StraicoProvider
 - Each provider implements: `callAPI()`, `analyzeWebsite()`, `generateEmail()`, **`generateEmailSequence()`**
 - `BaseProvider.getEmailPrompt()` and `getEmailSequencePrompt()` embed **Canva Brand Voice** directives (HUMAN / INSPIRING / EMPOWERING pillars, hard rules)
 - `BaseProvider.parseEmailSequence()` splits LLM output on `=== EMAIL N ===` markers using positional indexing (`parts[1]`, `parts[2]`, `parts[3]`) — immune to LLM preamble text
 - **LLMFactory:** Instantiates the correct provider based on model choice
-- Handles auto-fallback logic if quota exceeded (429)
+- **`callWithFallback(action, data, settings)`:** Auto-fallback helper — tries providers in order (`gemini → claude → openai → groq → openrouter → grok → deepseek → huggingface → straico`), skips providers with no key or 429/quota/rate errors, returns first success with `modelUsed` field set
 - Returns structured JSON response including `modelUsed` field
 - **HunterService class:** Falls back to Hunter.io Domain Search API when no email found on page
 - **AutonomousService class:** Manages bulk URL processing
@@ -93,9 +93,17 @@ Core orchestration logic with 3 main classes:
 - On load: **API key fields are left blank** with placeholder "(saved — leave blank to keep)" — actual key values never rendered to DOM
 - On save: **merges** typed values with existing stored keys — blank fields keep existing values
 - **DOM sanitized**: model names from API are inserted via `createElement` + `opt.value`, never `innerHTML`
-- **10 provider API keys** + per-provider Model ID: gemini, openai, claude, grok, openrouter, deepseek, huggingface, straico, **hunterio**
-- Async "Fetch Models" functions for each provider
-- Fields: defaultModel, apiKeys, models (per provider), userName, userSignature, emailLanguage, **targetUrl**, **targetDescription**, **batchDelayMs**
+- **11 provider API keys** + per-provider Model ID: gemini, openai, claude, grok, **groq**, openrouter, deepseek, huggingface, straico, **hunterio**
+- Async "Fetch Models" functions for each provider — endpoints:
+  - Gemini: `GET https://generativelanguage.googleapis.com/v1beta/models?key={key}`
+  - OpenAI: `GET https://api.openai.com/v1/models`
+  - Claude: `GET https://api.anthropic.com/v1/models`
+  - Grok: `GET https://api.x.ai/v1/models`
+  - OpenRouter: `GET https://openrouter.ai/api/v1/models`
+  - DeepSeek: `GET https://api.deepseek.com/models`
+  - Straico: `GET https://api.straico.com/v0/models` — response `data` can be array **or** `{chat:[…], image:[…]}` object; both formats handled via `Object.values().flat()`
+  - Hugging Face: no Fetch Models (user enters model name manually)
+- Fields: defaultModel, apiKeys, models (per provider), userName, userSignature, emailLanguage, **targetUrl**, **targetDescription**, **batchDelayMs**, **googleSheetsId**
 
 ---
 

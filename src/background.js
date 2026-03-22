@@ -345,6 +345,48 @@ class GrokProvider extends BaseProvider {
     }
 }
 
+class GroqProvider extends BaseProvider {
+    static async callAPI(prompt, apiKey, systemPrompt, modelId) {
+        const url = 'https://api.groq.com/openai/v1/chat/completions';
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: modelId || "llama-3.3-70b-versatile",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: prompt }
+                ],
+                temperature: 0.7
+            })
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(`Groq Error: ${err.error?.message || response.statusText}`);
+        }
+        const result = await response.json();
+        return result.choices[0].message.content;
+    }
+
+    static async analyzeWebsite(data, apiKey, modelId) {
+        const text = await this.callAPI(this.getAnalysisPrompt(data), apiKey, "You are a JSON assistant. Return ONLY valid JSON.", modelId);
+        return this.extractJSON(text);
+    }
+
+    static async generateEmail(data, apiKey, modelId) {
+        const text = await this.callAPI(this.getEmailPrompt(data), apiKey, "You are an expert outreach writer.", modelId);
+        return { email: text.trim() };
+    }
+
+    static async generateEmailSequence(data, apiKey, modelId) {
+        const text = await this.callAPI(this.getEmailSequencePrompt(data), apiKey, "You are an expert outreach writer.", modelId);
+        return { emailSequence: this.parseEmailSequence(text) };
+    }
+}
+
 class DeepSeekProvider extends BaseProvider {
     static async callAPI(prompt, apiKey, systemPrompt, modelId) {
         const url = 'https://api.deepseek.com/chat/completions';
@@ -762,6 +804,7 @@ class LLMFactory {
             case 'openai': return OpenAIProvider;
             case 'claude': return ClaudeProvider;
             case 'grok': return GrokProvider;
+            case 'groq': return GroqProvider;
             case 'deepseek': return DeepSeekProvider;
             case 'openrouter': return OpenRouterProvider;
             case 'huggingface': return HuggingFaceProvider;
@@ -770,6 +813,37 @@ class LLMFactory {
             default: return GeminiProvider;
         }
     }
+}
+
+// --- Auto-Fallback Helper ---
+
+const FALLBACK_ORDER = ['gemini','claude','openai','groq','openrouter','grok','deepseek','huggingface','straico'];
+
+async function callWithFallback(action, data, settings) {
+    const preferred = settings.defaultModel || 'gemini';
+    const order = [preferred, ...FALLBACK_ORDER.filter(p => p !== preferred)];
+    for (const model of order) {
+        const apiKey = settings.apiKeys?.[model];
+        if (!apiKey) continue;
+        try {
+            const Provider = LLMFactory.getProvider(model);
+            if (!Provider) continue;
+            const customModel = settings.models?.[model];
+            let result;
+            if (action === 'analyzeWebsite') {
+                result = await Provider.analyzeWebsite(data, apiKey, customModel);
+            } else {
+                result = await Provider.generateEmailSequence(data, apiKey, customModel);
+            }
+            result.modelUsed = model;
+            return result;
+        } catch (err) {
+            const msg = err.message || '';
+            if (msg.includes('429') || msg.includes('quota') || msg.includes('rate')) continue;
+            throw err;
+        }
+    }
+    throw new Error('All providers failed or have no API key configured.');
 }
 
 // --- Message Listener ---
@@ -819,26 +893,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     chrome.storage.local.get(
         ['defaultModel', 'apiKeys', 'models', 'userName', 'userSignature', 'emailLanguage', 'targetUrl', 'targetDescription', 'batchDelayMs'],
         (settings) => {
-            const model = settings.defaultModel || 'gemini';
-            const apiKey = settings.apiKeys ? settings.apiKeys[model] : request.apiKey;
-            const customModelId = settings.models ? settings.models[model] : null;
-
-            const provider = LLMFactory.getProvider(model);
-
             if (request.action === "analyze") {
-                provider.analyzeWebsite(request.data, apiKey, customModelId)
-                    .then(res => {
-                        res.modelUsed = model;
-                        sendResponse(res);
-                    })
+                callWithFallback('analyzeWebsite', request.data, settings)
+                    .then(res => sendResponse(res))
                     .catch(error => sendResponse({ error: error.message }));
             } else if (request.action === "generateEmail") {
-                // Gap 11: Generate full 3-email sequence
-                provider.generateEmailSequence({
+                // Gap 11: Generate full 3-email sequence with fallback
+                callWithFallback('generateEmailSequence', {
                     ...request.data,
                     targetUrl: settings.targetUrl || "",
                     targetDescription: settings.targetDescription || ""
-                }, apiKey, customModelId)
+                }, settings)
                     .then(sendResponse)
                     .catch(error => sendResponse({ error: error.message }));
             } else if (request.action === "startAutonomous") {

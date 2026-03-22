@@ -454,6 +454,20 @@ class PopupController {
             this.pollWaitId = setInterval(() => this.pollAutonomousStatus(), 1000);
         }
         statusDiv.textContent = "Starting agent in background. You can safely close this tab.";
+
+        // Show Stop button while agent is running
+        if (!document.getElementById('stop-agent')) {
+            const stopBtn = document.createElement('button');
+            stopBtn.id = 'stop-agent';
+            stopBtn.textContent = '⏹ Stop Agent';
+            stopBtn.style.cssText = 'width:100%;margin-top:8px;background:#ef4444;color:#fff;border:none;border-radius:8px;padding:10px;font-size:0.9rem;cursor:pointer;';
+            stopBtn.addEventListener('click', () => {
+                chrome.runtime.sendMessage({ action: 'stopAutonomous' });
+                stopBtn.disabled = true;
+                stopBtn.textContent = 'Stopping...';
+            });
+            statusDiv.after(stopBtn);
+        }
     }
 
     async pollAutonomousStatus() {
@@ -481,6 +495,9 @@ class PopupController {
         } else {
             runBtn.disabled = false;
             runBtn.textContent = 'Run Agent';
+            // Remove stop button when agent finishes
+            const stopBtn = document.getElementById('stop-agent');
+            if (stopBtn) stopBtn.remove();
             if (this.pollWaitId) {
                 clearInterval(this.pollWaitId);
                 this.pollWaitId = null;

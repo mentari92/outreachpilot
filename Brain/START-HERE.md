@@ -56,6 +56,8 @@ outreach-pilot/
 - [x] **Story 6.1** — 11 Functionality Gaps fixed (URL validation, CORS, WhatsApp E.164, Hunter.io, 3-email sequence, checkpoint/resume, rate limiting, mailto links, targetUrl)
 - [x] **Story 6.2** — Security Gaps fixed (storage.local, API key masking, CSP, DOM sanitization, Canva brand voice)
 - [x] **Story 6.3** — BMAD Code Audit (3 real bugs fixed in background.js)
+- [x] **Story 6.4** — Post-launch bug fix: Straico Fetch Models endpoint corrected (`/v1/model` → `/v0/models`)
+- [x] **Story 6.5** — Second BMAD audit: Stop button (popup.js), Groq provider (all 3 files), auto-fallback on 429 (callWithFallback), Google Sheets ID field
 
 ---
 

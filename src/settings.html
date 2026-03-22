@@ -212,6 +212,21 @@
         </div>
 
         <div class="field">
+            <label>Groq API Key</label>
+            <input type="password" id="groq-key" placeholder="gsk_...">
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <input type="text" id="groq-model" class="model-id" style="margin-top:0; flex:1;"
+                    placeholder="Default: llama-3.3-70b-versatile" list="groq-model-list">
+                <datalist id="groq-model-list"></datalist>
+                <button type="button" data-provider="groq"
+                    style="width:auto; padding:8px 14px; font-size:0.8rem; margin:0; box-shadow:none;">
+                    Fetch Models
+                </button>
+            </div>
+            <p class="hint" id="groq-model-status"></p>
+        </div>
+
+        <div class="field">
             <label>OpenRouter API Key</label>
             <input type="password" id="openrouter-key" placeholder="sk-or-...">
             <div style="display:flex; gap:8px; margin-top:8px;">
@@ -306,6 +321,11 @@
             <textarea id="target-description"
                 placeholder="e.g. Canva helps teams create stunning visuals 10x faster with drag-and-drop design tools."></textarea>
             <p class="hint">Brief description of what you offer — included in the email sequence prompt.</p>
+        </div>
+        <div class="field">
+            <label>Google Sheets ID <span style="font-weight:400;color:#94a3b8;">(optional)</span></label>
+            <input type="text" id="google-sheets-id" placeholder="Found in the Sheet URL: .../spreadsheets/d/[ID]/edit">
+            <p class="hint">For future Google Sheets integration.</p>
         </div>
     </div>
 

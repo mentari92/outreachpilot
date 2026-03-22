@@ -212,7 +212,7 @@
 - [x] "Run Agent" button triggers autonomous processing
 - [x] Progress section shows: "Processing X of Y"
 - [x] Each URL shows result card with status and score
-- [x] Stop button halts the agent (via stopAutonomous message)
+- [x] Stop button halts the agent (via stopAutonomous message) — dynamically created in popup.js when agent starts
 - [x] "Download Results (CSV)" button appears after completion
 
 ---
@@ -237,7 +237,7 @@
 - [x] Background tab closes after processing (20-second load timeout)
 - [x] Agent correctly handles URLs that fail to load (marks as error, continues)
 - [x] Agent correctly handles sites that block scraping (marks as error, continues)
-- [x] Stop button halts the agent via stopAutonomous message
+- [x] Stop button halts the agent via stopAutonomous message — button created dynamically in popup.js, removed when agent finishes
 - [x] Final summary with "Download Results (CSV)" button
 - [x] popup.js polls agent status every 1 second for live progress
 
@@ -301,3 +301,27 @@
 - [x] **Bug 1 (CRITICAL)** — `background.js` message handler changed from `chrome.storage.sync.get` to `chrome.storage.local.get` — all AI calls now read the correct storage location
 - [x] **Bug 2 (HIGH)** — `parseEmailSequence()` rewritten to use positional indexing (`parts[1]`, `parts[2]`, `parts[3]`) — immune to LLM preamble text before first `=== EMAIL 1 ===` marker
 - [x] **Bug 3 (LOW)** — `HunterService.findEmails()` catch block now logs `console.error("[HunterService] findEmails failed:", err)` for debuggability
+
+---
+
+### Story 6.4 — Post-Launch Bug Fix: Straico Fetch Models
+
+**Goal:** Fix Straico "Fetch Models" button returning HTML error instead of model list.
+
+**Root Cause:** `settings.js` called `https://api.straico.com/v1/model` (non-existent endpoint) — server returned HTML error page, causing "Unexpected token '<', '<!DOCTYPE'" JSON parse error.
+
+**Acceptance Criteria:**
+- [x] **Bug 4 (MEDIUM)** — Straico Fetch Models endpoint corrected from `/v1/model` → `/v0/models` in `settings.js`
+- [x] Response parser updated to handle both array format and object format `{chat:[…], image:[…]}` via `Object.values(data.data).flat()`
+
+---
+
+### Story 6.5 — Post-Launch Bug Fix: Stop Button, Groq Provider, Auto-Fallback, Google Sheets ID
+
+**Goal:** Fix 3 bugs + 1 gap found in second BMAD audit.
+
+**Acceptance Criteria:**
+- [x] **Bug 4 (HIGH)** — Stop button added to popup.js: dynamically created on agent start, sends `stopAutonomous` to background, removed when agent stops
+- [x] **Bug 5 (HIGH)** — Groq provider added to `background.js` (`GroqProvider` class, `api.groq.com`, default `llama-3.3-70b-versatile`), `settings.js` (API_KEY_PROVIDERS + PROVIDER_FETCH + save/load), and `settings.html` (Groq section with Fetch Models button)
+- [x] **Bug 6 (HIGH)** — Auto-fallback on 429: `callWithFallback()` helper added to `background.js`; tries each provider in order, skips on 429/quota/rate errors; message handler now uses it for `analyze` and `generateEmail` actions
+- [x] **Gap 7 (LOW)** — Google Sheets ID field added to `settings.html` and `settings.js` (save + load)

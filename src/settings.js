@@ -35,6 +35,12 @@ const PROVIDER_FETCH = {
         const data = await res.json();
         return (data.data || []).map(m => m.id).sort();
     },
+    groq: async (key) => {
+        const res = await fetch('https://api.groq.com/openai/v1/models', { headers: { 'Authorization': `Bearer ${key}` } });
+        if (!res.ok) throw new Error((await res.json()).error?.message || res.statusText);
+        const data = await res.json();
+        return (data.data || []).map(m => m.id).filter(id => /llama|mixtral|gemma|whisper/i.test(id)).sort();
+    },
     deepseek: async (key) => {
         const res = await fetch('https://api.deepseek.com/models', { headers: { 'Authorization': `Bearer ${key}` } });
         if (!res.ok) throw new Error((await res.json()).error?.message || res.statusText);
@@ -42,10 +48,11 @@ const PROVIDER_FETCH = {
         return (data.data || []).map(m => m.id);
     },
     straico: async (key) => {
-        const res = await fetch('https://api.straico.com/v1/model', { headers: { 'Authorization': `Bearer ${key}` } });
+        const res = await fetch('https://api.straico.com/v0/models', { headers: { 'Authorization': `Bearer ${key}` } });
         if (!res.ok) throw new Error((await res.json()).error?.message || res.statusText);
         const data = await res.json();
-        return (data.data || []).map(m => m.name || m.model || m.id).filter(Boolean).sort();
+        const list = Array.isArray(data.data) ? data.data : Object.values(data.data || {}).flat();
+        return list.map(m => m.model || m.name || m.id).filter(Boolean).sort();
     }
 };
 
@@ -87,7 +94,7 @@ document.querySelectorAll('button[data-provider]').forEach(btn => {
     });
 });
 
-const API_KEY_PROVIDERS = ['gemini','openai','claude','grok','openrouter','deepseek','huggingface','straico','hunterio'];
+const API_KEY_PROVIDERS = ['gemini','openai','claude','grok','groq','openrouter','deepseek','huggingface','straico','hunterio'];
 
 // Gap 6: Save — load existing keys first, only overwrite fields the user typed into
 document.getElementById('save').addEventListener('click', () => {
@@ -106,6 +113,7 @@ document.getElementById('save').addEventListener('click', () => {
                 openai: document.getElementById('openai-model').value,
                 claude: document.getElementById('claude-model').value,
                 grok: document.getElementById('grok-model').value,
+                groq: document.getElementById('groq-model').value,
                 openrouter: document.getElementById('openrouter-model').value,
                 deepseek: document.getElementById('deepseek-model').value,
                 huggingface: document.getElementById('huggingface-model').value,
@@ -116,7 +124,8 @@ document.getElementById('save').addEventListener('click', () => {
             emailLanguage: document.getElementById('email-language').value.trim(),
             targetUrl: document.getElementById('target-url').value,
             targetDescription: document.getElementById('target-description').value,
-            batchDelayMs: parseInt(document.getElementById('batch-delay').value) || 2000
+            batchDelayMs: parseInt(document.getElementById('batch-delay').value) || 2000,
+            googleSheetsId: document.getElementById('google-sheets-id').value.trim()
         };
 
         // Gap 1: store in local (not sync) to keep API keys on-device
@@ -131,7 +140,7 @@ document.getElementById('save').addEventListener('click', () => {
 
 function loadSettings() {
     // Gap 1: read from local storage
-    chrome.storage.local.get(['defaultModel', 'apiKeys', 'models', 'userName', 'userSignature', 'emailLanguage', 'targetUrl', 'targetDescription', 'batchDelayMs'], (data) => {
+    chrome.storage.local.get(['defaultModel', 'apiKeys', 'models', 'userName', 'userSignature', 'emailLanguage', 'targetUrl', 'targetDescription', 'batchDelayMs', 'googleSheetsId'], (data) => {
         if (data.defaultModel) document.getElementById('default-model').value = data.defaultModel;
 
         // Gap 6: never populate API key fields with actual values — show placeholder instead
@@ -150,6 +159,7 @@ function loadSettings() {
             document.getElementById('openai-model').value = data.models.openai || '';
             document.getElementById('claude-model').value = data.models.claude || '';
             document.getElementById('grok-model').value = data.models.grok || '';
+            document.getElementById('groq-model').value = data.models.groq || '';
             document.getElementById('openrouter-model').value = data.models.openrouter || '';
             document.getElementById('deepseek-model').value = data.models.deepseek || '';
             document.getElementById('huggingface-model').value = data.models.huggingface || '';
@@ -162,6 +172,7 @@ function loadSettings() {
         if (data.targetUrl) document.getElementById('target-url').value = data.targetUrl;
         if (data.targetDescription) document.getElementById('target-description').value = data.targetDescription;
         if (data.batchDelayMs) document.getElementById('batch-delay').value = data.batchDelayMs;
+        if (data.googleSheetsId) document.getElementById('google-sheets-id').value = data.googleSheetsId;
     });
 }
 
