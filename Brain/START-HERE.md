@@ -38,7 +38,7 @@ outreach-pilot/
 
 ### Epic 2: Core Scanning ✅ COMPLETE
 - [x] **Story 2.1** — content.js: website scraper & contact extractor
-- [x] **Story 2.2** — background.js: LLM integration & auto-fallback (9 providers)
+- [x] **Story 2.2** — background.js: LLM integration & auto-fallback (10 providers via callWithFallback)
 - [x] **Story 2.3** — PBN detection & QA scoring
 
 ### Epic 3: Email Generation & UI ✅ COMPLETE
@@ -140,16 +140,11 @@ The extension auto-falls back to the next available provider.
 GEMINI_API_KEY=AIza...
 ```
 
-**For Google Sheets (Story 5.1):**
-```
-GOOGLE_SHEETS_ID=your_sheet_id_here
-GOOGLE_API_KEY=your_google_api_key
-```
-
 > Note: API keys in Chrome Extension are stored in chrome.storage.local
 > (entered via Settings page), not in .env files.
 > Keys are masked in the settings UI — they never appear as plain text in the DOM.
 > The .env.example is for reference only.
+> Google Sheets integration was descoped — results are exported via CSV download instead.
 
 ---
 

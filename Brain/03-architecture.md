@@ -93,7 +93,7 @@ Core orchestration logic with 3 main classes:
 - On load: **API key fields are left blank** with placeholder "(saved — leave blank to keep)" — actual key values never rendered to DOM
 - On save: **merges** typed values with existing stored keys — blank fields keep existing values
 - **DOM sanitized**: model names from API are inserted via `createElement` + `opt.value`, never `innerHTML`
-- **11 provider API keys** + per-provider Model ID: gemini, openai, claude, grok, **groq**, openrouter, deepseek, huggingface, straico, **hunterio**
+- **10 provider API keys** + per-provider Model ID: gemini, openai, claude, grok, groq, openrouter, deepseek, huggingface, straico, hunterio
 - Async "Fetch Models" functions for each provider — endpoints:
   - Gemini: `GET https://generativelanguage.googleapis.com/v1beta/models?key={key}`
   - OpenAI: `GET https://api.openai.com/v1/models`

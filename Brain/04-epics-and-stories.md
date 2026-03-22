@@ -59,14 +59,14 @@
 
 **Tasks:**
 - Build settings.html UI with all input fields
-- Implement settings.js to save/load from chrome.storage.sync
+- Implement settings.js to save/load from chrome.storage.local
 - Add ⚙️ icon in popup that opens settings page
 
 **Acceptance Criteria:**
-- [x] Settings page has fields for: Default Model (dropdown), API keys + Model ID for 9 providers (Gemini, Claude, OpenAI, Groq, OpenRouter, Grok, DeepSeek, Hugging Face, Straico), Your Name, Email Signature, Output Language, Google Sheets ID
-- [x] Each provider has a "Fetch Models" button to auto-load available models
-- [x] Clicking "Save" stores all values in chrome.storage.sync
-- [x] Values persist after Chrome is restarted
+- [x] Settings page has fields for: Default Model (dropdown), API keys + Model ID for 9 providers (Gemini, Claude, OpenAI, Grok, Groq, OpenRouter, DeepSeek, Hugging Face, Straico) + Hunter.io, Your Name, Email Signature, Output Language, Target URL, Value Proposition, Batch Delay
+- [x] Each provider has a "Fetch Models" button to auto-load available models (except Hugging Face — manual entry)
+- [x] Clicking "Save" stores all values in chrome.storage.local
+- [x] Values persist after Chrome is restarted (stored in chrome.storage.local)
 - [x] Reopening settings shows previously saved values
 - [x] ⚙️ icon in popup opens settings page
 

@@ -62,7 +62,7 @@ The extension operates in two modes:
 | 3-Email Sequence Generator | Generates a 3-email outreach sequence (Day 0 pitch, Day 5–7 follow-up, Day 12–14 final) with Canva brand voice |
 | Autonomous Mode | Processes bulk URL lists automatically in the background — with checkpoint/resume and configurable rate limiting |
 | Hunter.io Enrichment | Falls back to Hunter.io Domain Search API if no email is found on the page |
-| Multi-LLM Support | Supports 9 providers: Gemini, Claude, OpenAI, Grok (xAI), OpenRouter, DeepSeek, Hugging Face, Straico — with auto-fallback |
+| Multi-LLM Support | Supports 9 providers: Gemini, Claude, OpenAI, Grok (xAI), Groq, OpenRouter, DeepSeek, Hugging Face, Straico — with auto-fallback via `callWithFallback()` |
 | Deep Contact Scanning | Scans /contact, /about, /legal pages via background service worker (CORS-safe) |
 | Multi-language Emails | Email generation in any language (user-configurable free text field) |
 | CSV Export | Download all autonomous mode results as a CSV file (includes Email_1, Email_2, Email_3 columns) |

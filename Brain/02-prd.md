@@ -69,52 +69,44 @@
 - Final summary shown when all URLs are processed
 - "Download Results (CSV)" button appears after completion
 
-### FR-7: Google Sheets Logger
-- Extension MUST log the following for every scan (manual or autonomous):
-  - Date & Time
-  - URL
-  - PBN Detected (Yes/No)
-  - QA Score (overall)
-  - Content Quality Score
-  - Niche Relevance Score
-  - Site Trust Score
-  - Email Found
-  - WhatsApp Found
-  - Social Media Profiles Found
-  - Email Draft Generated (Yes/No)
-  - LLM Model Used
-- Logging uses Google Sheets API v4
-- User provides their Google Sheets ID in settings
+### FR-7: CSV Export (replaces Google Sheets Logger)
+- After Autonomous Mode completes, all results are available as a downloadable CSV file
+- CSV includes: URL, PBN Detected, Score, Emails, WhatsApp, Social Profiles, Email_1, Email_2, Email_3, Model Used (14 columns total)
+- Properly escaped for Excel compatibility
+- Download triggers client-side — no API required
+- ~~Google Sheets integration was descoped~~ (field removed from settings; CSV export is the export mechanism)
 
 ### FR-8: Multi-LLM Support with Auto-Fallback
 - User can input separate API keys for each provider in settings:
   - Gemini (Google AI)
   - Claude (Anthropic)
   - OpenAI (GPT)
-  - Groq
-  - OpenRouter
   - Grok (xAI)
+  - Groq (api.groq.com — fast inference)
+  - OpenRouter
   - DeepSeek
   - Hugging Face
   - Straico
-- User selects a Default Model from a dropdown
-- Each provider also has a configurable Model ID field (overrides default model per provider)
-- Providers offer "Fetch Models" button to auto-populate available models from their API
-- If selected model returns quota error (429) → auto-switch to next available provider
+- User selects a Default Model from a dropdown (includes all 9 providers)
+- Each provider has a configurable Model ID field + "Fetch Models" button (except Hugging Face — manual entry)
+- Auto-fallback via `callWithFallback()` in background.js: on 429/quota/rate error → tries next provider with a configured key
 - Priority fallback order: Gemini → Claude → OpenAI → Groq → OpenRouter → Grok → DeepSeek → Hugging Face → Straico
 - Currently active model name is always shown in the popup UI
 
 ### FR-9: Settings Page
 - Extension MUST have a settings page accessible via ⚙️ icon
 - Settings fields:
-  - Default Model (dropdown)
+  - Default Model (dropdown — all 9 providers)
   - Per provider: API Key + Model ID + "Fetch Models" button
-    - Gemini, Claude, OpenAI, Groq, OpenRouter, Grok (xAI), DeepSeek, Hugging Face, Straico
+    - Gemini, Claude, OpenAI, Grok (xAI), Groq, OpenRouter, DeepSeek, Hugging Face, Straico
+  - Hunter.io API Key (optional — email discovery fallback)
   - Your Name
   - Email Signature
   - Output Language (for email generation)
-  - Google Sheets ID
-- All settings stored securely in Chrome Storage API (chrome.storage.sync)
+  - Your Product / Landing Page URL
+  - Value Proposition
+  - Delay Between URLs (ms)
+- All settings stored in **`chrome.storage.local`** — API keys never leave the device (not synced)
 
 ### FR-10: CSV Export
 - After Autonomous Mode completes, user can download all results as a CSV file
