@@ -4,7 +4,8 @@
 
 class StorageManager {
     static async getSettings() {
-        return await chrome.storage.sync.get(['defaultModel', 'apiKeys', 'userName', 'userSignature', 'geminiKey', 'emailLanguage']);
+        // Gap 1: read from local storage (API keys must not sync to Google servers)
+        return await chrome.storage.local.get(['defaultModel', 'apiKeys', 'userName', 'userSignature', 'geminiKey', 'emailLanguage', 'targetUrl', 'targetDescription', 'batchDelayMs']);
     }
 
     static getActiveKey(settings) {
@@ -108,7 +109,21 @@ class UIBuilder {
 
         const contactsDiv = this.createElement('div', 'contacts');
         contactsDiv.appendChild(this.createElement('h4', '', 'Contacts Found:'));
-        contactsDiv.appendChild(this.createElement('p', '', `📧 ${scrape.emails.join(', ') || 'None found'}`));
+        const emailsP = this.createElement('p', '');
+        emailsP.appendChild(document.createTextNode('📧 '));
+        if (scrape.emails && scrape.emails.length > 0) {
+            scrape.emails.forEach((email, i) => {
+                const a = document.createElement('a');
+                a.href = `mailto:${email}`;
+                a.textContent = email;
+                a.style.cssText = 'color:var(--primary);text-decoration:none;';
+                emailsP.appendChild(a);
+                if (i < scrape.emails.length - 1) emailsP.appendChild(document.createTextNode(', '));
+            });
+        } else {
+            emailsP.appendChild(document.createTextNode('None found'));
+        }
+        contactsDiv.appendChild(emailsP);
 
         const emailAreaDiv = this.createElement('div');
         emailAreaDiv.id = 'email-area';
@@ -126,7 +141,7 @@ class UIBuilder {
         container.appendChild(this.createElement('p', 'hint', 'AI insight powered by current default model.'));
     }
 
-    static appendAgentResult(containerId, url, result, email) {
+    static appendAgentResult(containerId, url, result, emailSequence) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -136,7 +151,7 @@ class UIBuilder {
         card.style.marginBottom = '10px';
         card.style.borderLeft = result.error || result.isPBN ? '4px solid var(--danger)' : '4px solid var(--primary)';
 
-        const header = this.createElement('strong', '', url.substring(0, 50) + '...');
+        const header = this.createElement('strong', '', url.substring(0, 60) + (url.length > 60 ? '...' : ''));
         header.style.display = 'block';
         header.style.marginBottom = '5px';
         card.appendChild(header);
@@ -149,37 +164,124 @@ class UIBuilder {
             const statusText = result.isPBN ? '❌ PBN Detected' : `Score: ${result.overallScore}/100`;
             card.appendChild(this.createElement('div', '', statusText));
 
-            if (email) {
-                const emP = this.createElement('p', '', '✅ Draft Saved');
-                emP.style.color = 'green';
-                card.appendChild(emP);
+            // Show discovered emails as mailto links
+            if (result.emails && result.emails.length > 0) {
+                const emailsP = this.createElement('p', '');
+                emailsP.style.marginTop = '4px';
+                emailsP.appendChild(document.createTextNode('📧 '));
+                result.emails.forEach((email, i) => {
+                    const a = document.createElement('a');
+                    a.href = `mailto:${email}`;
+                    a.textContent = email;
+                    a.style.cssText = 'color:var(--primary);text-decoration:none;margin-right:4px;';
+                    emailsP.appendChild(a);
+                    const copyBtn = document.createElement('button');
+                    copyBtn.textContent = '📋';
+                    copyBtn.title = 'Copy email';
+                    copyBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:0.8rem;padding:0 4px;';
+                    copyBtn.onclick = () => navigator.clipboard.writeText(email);
+                    emailsP.appendChild(copyBtn);
+                    if (i < result.emails.length - 1) emailsP.appendChild(document.createTextNode(' '));
+                });
+                card.appendChild(emailsP);
+            }
+
+            // Show 3-email sequence as tabs
+            if (emailSequence && emailSequence.length > 0) {
+                const seqDiv = this.createElement('div', '');
+                seqDiv.style.marginTop = '8px';
+
+                const tabBar = this.createElement('div', '');
+                tabBar.style.cssText = 'display:flex;gap:4px;margin-bottom:4px;';
+
+                const emailPanels = [];
+                const labels = ['Email 1 (Day 0)', 'Email 2 (Day 5-7)', 'Email 3 (Day 12-14)'];
+
+                emailSequence.forEach((emailText, idx) => {
+                    const tabBtn = this.createElement('button', '');
+                    tabBtn.textContent = `#${idx + 1}`;
+                    tabBtn.style.cssText = 'padding:2px 8px;font-size:0.75rem;border-radius:4px;border:1px solid var(--primary);cursor:pointer;background:' + (idx === 0 ? 'var(--primary)' : 'white') + ';color:' + (idx === 0 ? 'white' : 'var(--primary)') + ';';
+                    tabBar.appendChild(tabBtn);
+
+                    const panel = this.createElement('div', '');
+                    panel.style.cssText = `display:${idx === 0 ? 'block' : 'none'};background:#f8fafc;border-radius:6px;padding:6px;font-size:0.78rem;white-space:pre-wrap;max-height:120px;overflow-y:auto;border:1px solid #e2e8f0;`;
+                    panel.title = labels[idx];
+                    panel.textContent = emailText || '(no email generated)';
+                    emailPanels.push(panel);
+
+                    tabBtn.onclick = () => {
+                        emailPanels.forEach((p, i) => {
+                            p.style.display = i === idx ? 'block' : 'none';
+                            tabBar.children[i].style.background = i === idx ? 'var(--primary)' : 'white';
+                            tabBar.children[i].style.color = i === idx ? 'white' : 'var(--primary)';
+                        });
+                    };
+                });
+
+                seqDiv.appendChild(tabBar);
+                emailPanels.forEach(p => seqDiv.appendChild(p));
+                card.appendChild(seqDiv);
             }
         }
 
         container.prepend(card);
     }
 
-    static renderEmailDraft(containerId, emailText, onCopy) {
+    static renderEmailDraft(containerId, emailSequence) {
         const container = document.getElementById(containerId);
         if (!container) return;
         this.clearElement(container);
 
+        const emails = Array.isArray(emailSequence) ? emailSequence : [emailSequence];
+        const labels = ['Email 1 — Day 0 (Initial Pitch)', 'Email 2 — Day 5-7 (Follow-up)', 'Email 3 — Day 12-14 (Final Check-in)'];
+
         const emailBox = this.createElement('div', 'email-box');
 
-        const textarea = this.createElement('textarea', '');
-        textarea.id = 'email-text';
-        textarea.readOnly = true;
-        textarea.value = emailText;
-        emailBox.appendChild(textarea);
+        // Tab bar
+        const tabBar = this.createElement('div', '');
+        tabBar.style.cssText = 'display:flex;gap:6px;margin-bottom:8px;';
+        const panels = [];
 
-        const copyBtn = this.createElement('button', 'secondary-btn', 'Copy to Clipboard');
-        copyBtn.id = 'copy-email';
-        copyBtn.onclick = onCopy;
-        emailBox.appendChild(copyBtn);
+        emails.forEach((emailText, idx) => {
+            const tabBtn = this.createElement('button', '');
+            tabBtn.textContent = `Email ${idx + 1}`;
+            tabBtn.style.cssText = 'padding:4px 10px;font-size:0.82rem;border-radius:6px;border:1px solid var(--primary);cursor:pointer;background:' + (idx === 0 ? 'var(--primary)' : 'white') + ';color:' + (idx === 0 ? 'white' : 'var(--primary)') + ';';
+            tabBar.appendChild(tabBtn);
 
-        const toast = this.createElement('div', 'hidden', 'Copied!');
-        toast.id = 'copy-toast';
-        emailBox.appendChild(toast);
+            const panel = this.createElement('div', '');
+            panel.style.display = idx === 0 ? 'block' : 'none';
+
+            const textarea = this.createElement('textarea', '');
+            textarea.readOnly = true;
+            textarea.value = emailText || '';
+            textarea.title = labels[idx] || '';
+            panel.appendChild(textarea);
+
+            const copyBtn = this.createElement('button', 'secondary-btn', 'Copy to Clipboard');
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(emailText || '').then(() => {
+                    const toast = panel.querySelector('.copy-toast');
+                    if (toast) { toast.classList.remove('hidden'); setTimeout(() => toast.classList.add('hidden'), 2000); }
+                });
+            };
+            panel.appendChild(copyBtn);
+
+            const toast = this.createElement('div', 'hidden copy-toast', 'Copied!');
+            panel.appendChild(toast);
+
+            panels.push(panel);
+
+            tabBtn.onclick = () => {
+                panels.forEach((p, i) => {
+                    p.style.display = i === idx ? 'block' : 'none';
+                    tabBar.children[i].style.background = i === idx ? 'var(--primary)' : 'white';
+                    tabBar.children[i].style.color = i === idx ? 'white' : 'var(--primary)';
+                });
+            };
+        });
+
+        if (emails.length > 1) emailBox.appendChild(tabBar);
+        panels.forEach(p => emailBox.appendChild(p));
 
         container.appendChild(emailBox);
     }
@@ -190,7 +292,7 @@ class UIBuilder {
         const headers = [
             "Date", "URL", "PBN Detected", "Overall Score", "Content Quality",
             "Niche Relevance", "Trust Score", "Emails", "WhatsApp",
-            "Social Profiles", "Email Draft", "Model Used"
+            "Social Profiles", "Email_1", "Email_2", "Email_3", "Model Used"
         ];
 
         // Helper to escape CSV values properly
@@ -214,7 +316,9 @@ class UIBuilder {
             escapeCSV(data.emails ? data.emails.join(", ") : ""),
             escapeCSV(data.whatsapp ? data.whatsapp.join(", ") : ""),
             escapeCSV(data.socialProfiles ? Object.values(data.socialProfiles).filter(Boolean).join(", ") : ""),
-            escapeCSV(data.emailDraft || ""),
+            escapeCSV(data.Email_1 || data.emailDraft || ""),
+            escapeCSV(data.Email_2 || ""),
+            escapeCSV(data.Email_3 || ""),
             escapeCSV(data.modelUsed || "Unknown")
         ]);
 
@@ -250,6 +354,28 @@ class PopupController {
             } else if (status && status.results && status.results.length > 0) {
                 // Render the results from previous run
                 this.pollAutonomousStatus();
+            }
+        });
+
+        // Gap 5: Check if a resume checkpoint exists
+        chrome.runtime.sendMessage({ action: "checkCheckpoint" }, (info) => {
+            if (info && info.hasCheckpoint) {
+                const statusDiv = document.getElementById('agent-status');
+                const runBtn = document.getElementById('run-agent');
+                if (statusDiv) statusDiv.textContent = `🔖 Saved progress found: URL ${info.currentIdx}/${info.totalUrls}`;
+                if (runBtn && runBtn.parentNode && !document.getElementById('resume-agent-btn')) {
+                    const resumeBtn = UIBuilder.createElement('button', 'primary-btn', `▶ Resume from URL ${info.currentIdx}/${info.totalUrls}`);
+                    resumeBtn.id = 'resume-agent-btn';
+                    resumeBtn.style.marginTop = '6px';
+                    resumeBtn.onclick = () => {
+                        resumeBtn.remove();
+                        chrome.runtime.sendMessage({ action: "resumeAutonomous", urls: info.urls, settings: {} });
+                        if (!this.pollWaitId) {
+                            this.pollWaitId = setInterval(() => this.pollAutonomousStatus(), 1000);
+                        }
+                    };
+                    runBtn.parentNode.insertBefore(resumeBtn, runBtn.nextSibling);
+                }
             }
         });
     }
@@ -304,7 +430,11 @@ class PopupController {
         const statusDiv = document.getElementById('agent-status');
         const resultsDiv = document.getElementById('agent-results');
 
-        const urls = urlTextArea.value.split('\n').map(u => u.trim()).filter(u => u.startsWith('http'));
+        const rawUrls = urlTextArea.value.split('\n').map(u => u.trim()).filter(u => {
+            try { const p = new URL(u); return p.protocol === 'http:' || p.protocol === 'https:'; }
+            catch { return false; }
+        });
+        const urls = [...new Set(rawUrls)];
 
         if (urls.length === 0) {
             statusDiv.textContent = 'Please enter at least one valid URL (starting with http/https).';
@@ -340,7 +470,7 @@ class PopupController {
         if (!this.lastUiResultsCount || this.lastUiResultsCount !== status.uiResults.length) {
             UIBuilder.clearElement(resultsDiv);
             status.uiResults.forEach(item => {
-                UIBuilder.appendAgentResult('agent-results', item.url, item.aiResult || { error: item.error }, item.emailDraft);
+                UIBuilder.appendAgentResult('agent-results', item.url, item.aiResult || { error: item.error }, item.emailSequence || null);
             });
             this.lastUiResultsCount = status.uiResults.length;
         }
@@ -422,7 +552,7 @@ class PopupController {
 
     async generateEmail(analysis, settings) {
         try {
-            UIBuilder.showStatus('email-area', 'Drafting email...', false, true);
+            UIBuilder.showStatus('email-area', 'Drafting email sequence...', false, true);
 
             // Fetch fresh settings in case user changed language after scanning
             const freshSettings = await StorageManager.getSettings();
@@ -430,6 +560,7 @@ class PopupController {
             const result = await chrome.runtime.sendMessage({
                 action: "generateEmail",
                 data: {
+                    siteUrl: analysis.siteUrl || "",
                     title: analysis.summary,
                     summary: analysis.summary,
                     userName: freshSettings.userName || settings.userName,
@@ -440,15 +571,7 @@ class PopupController {
 
             if (result.error) throw new Error(result.error);
 
-            UIBuilder.renderEmailDraft('email-area', result.email, () => {
-                const text = document.getElementById('email-text');
-                text.select();
-                document.execCommand('copy');
-
-                const toast = document.getElementById('copy-toast');
-                toast.classList.remove('hidden');
-                setTimeout(() => toast.classList.add('hidden'), 2000);
-            });
+            UIBuilder.renderEmailDraft('email-area', result.emailSequence || [result.email || ""]);
 
         } catch (error) {
             UIBuilder.showStatus('email-area', `Failed: ${error.message}`, true);

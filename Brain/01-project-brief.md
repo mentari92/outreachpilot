@@ -1,7 +1,7 @@
 # Project Brief: OutreachPilot — AI-Powered Outreach Co-Pilot
 
-**Version:** 1.1
-**Status:** Built — Extension v1.1 Live
+**Version:** 1.3
+**Status:** Built — Extension v1.3 Live (Security Hardened + BMAD Audited)
 **Team:** Canva Link Building Team — H1 2026 AI Challenge
 
 ---
@@ -59,13 +59,17 @@ The extension operates in two modes:
 | PBN Detection | AI detects Private Blog Network red flags before scoring |
 | QA Scoring | Scores each site on Content Quality, Niche Relevance, and Outreach Viability |
 | Contact Extraction | Finds emails, WhatsApp numbers, and social media profiles |
-| Email Generator | Generates personalized outreach emails based on site content and tone |
-| Autonomous Mode | Processes bulk URL lists automatically without user intervention |
-| Google Sheets Logger | Logs all scan results and email drafts automatically |
-| Multi-LLM Support | Supports 8 providers: Gemini, Claude, OpenAI, Groq, OpenRouter, Grok (xAI), DeepSeek, Hugging Face, Straico — with auto-fallback |
-| Deep Contact Scanning | Scans /contact, /about, /legal pages for additional emails & WhatsApp beyond the main page |
-| Multi-language Emails | Email generation in any language (configurable in settings) |
-| CSV Export | Download all autonomous mode results as a CSV file |
+| 3-Email Sequence Generator | Generates a 3-email outreach sequence (Day 0 pitch, Day 5–7 follow-up, Day 12–14 final) with Canva brand voice |
+| Autonomous Mode | Processes bulk URL lists automatically in the background — with checkpoint/resume and configurable rate limiting |
+| Hunter.io Enrichment | Falls back to Hunter.io Domain Search API if no email is found on the page |
+| Multi-LLM Support | Supports 9 providers: Gemini, Claude, OpenAI, Grok (xAI), OpenRouter, DeepSeek, Hugging Face, Straico — with auto-fallback |
+| Deep Contact Scanning | Scans /contact, /about, /legal pages via background service worker (CORS-safe) |
+| Multi-language Emails | Email generation in any language (user-configurable free text field) |
+| CSV Export | Download all autonomous mode results as a CSV file (includes Email_1, Email_2, Email_3 columns) |
+| URL Validation & Dedup | Invalid or duplicate URLs are silently dropped before the agent starts |
+| International WhatsApp | Detects WhatsApp numbers in E.164 format (all country codes) + Indonesian patterns |
+| Canva Brand Voice | All generated emails follow Canva's 3 pillars: Human, Inspiring, Empowering |
+| Security Hardening | API keys in storage.local (not synced), masked in UI, CSP enforced, DOM sanitized |
 
 ---
 
@@ -85,8 +89,8 @@ The extension operates in two modes:
 | Extension Framework | Chrome Manifest V3 |
 | Frontend | Vanilla HTML / CSS / JavaScript |
 | AI | Multi-LLM via separate API keys (Gemini, Claude, OpenAI, Groq, OpenRouter, Grok/xAI, DeepSeek, Hugging Face, Straico) |
-| Storage | Chrome Storage API (local) |
-| Sheets Integration | Google Sheets API v4 |
+| Storage | `chrome.storage.local` — API keys never leave the device (not synced to Google cloud) |
+| Email Enrichment | Hunter.io Domain Search API (optional fallback) |
 
 ---
 

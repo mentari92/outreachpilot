@@ -85,45 +85,47 @@ function extractWhatsApp(text, htmlContent) {
         if (match) waNumbers.push(match[1]);
     });
 
-    // 2. Search for common Indonesian WhatsApp patterns in text (e.g. 0812... or +62812...)
-    const telMatches = text.match(/(?:\+62|62|0)8[1-9][0-9]{7,11}/g) || [];
-    telMatches.forEach(num => {
+    // 2. Indonesian WhatsApp patterns (e.g. 0812... or +62812...)
+    const idMatches = text.match(/(?:\+62|62|0)8[1-9][0-9]{7,11}/g) || [];
+    idMatches.forEach(num => {
         let clean = num.replace(/\D/g, '');
         if (clean.startsWith('0')) clean = '62' + clean.substring(1);
         if (clean.length >= 10 && clean.length <= 15) waNumbers.push(clean);
     });
 
+    // 3. Generic E.164 international numbers (e.g. +44..., +1..., +81...)
+    const intlMatches = text.match(/\+[1-9]\d{6,14}/g) || [];
+    intlMatches.forEach(num => {
+        const clean = num.replace(/\D/g, '');
+        if (clean.length >= 7 && clean.length <= 15) waNumbers.push(clean);
+    });
+
     return Array.from(new Set(waNumbers));
 }
 
-async function findContactPages(domain) {
+async function findContactPages() {
     // Strategy: Look for universal URL fragments that web developers use worldwide
     const universalFragments = /contact|about|redak|info|impressum|imprint|legal|kontakt|tulis|hubungi|contacto|acerca|propos|chi-siamo|contato|over/i;
 
-    const contactLinks = Array.from(document.querySelectorAll('a'))
-        .filter(a =>
-            universalFragments.test(a.innerText) ||
-            universalFragments.test(a.href)
-        )
-        .map(a => a.href)
-        .slice(0, 5); // Take top 5 most likely pages
+    const contactLinks = Array.from(new Set(
+        Array.from(document.querySelectorAll('a'))
+            .filter(a =>
+                universalFragments.test(a.innerText) ||
+                universalFragments.test(a.href)
+            )
+            .map(a => a.href)
+            .filter(href => href.startsWith('http'))
+            .slice(0, 5)
+    ));
 
-    let extraEmails = [];
-    let extraWA = [];
+    if (contactLinks.length === 0) return { emails: [], whatsapp: [] };
 
-    for (const url of Array.from(new Set(contactLinks))) {
-        try {
-            const resp = await fetch(url);
-            const html = await resp.text();
-            const textOnly = html.replace(/<[^>]*>?/gm, ' '); // Strip HTML tags for clean regex
-
-            extraEmails = extraEmails.concat(extractEmails(textOnly));
-            extraWA = extraWA.concat(extractWhatsApp(textOnly, html));
-        } catch (e) {
-            console.error("Failed to fetch contact page:", url);
-        }
-    }
-    return { emails: extraEmails, whatsapp: extraWA };
+    // Delegate fetching to background.js to avoid CORS restrictions in content script context
+    return new Promise(resolve => {
+        chrome.runtime.sendMessage({ action: "fetchContactPages", urls: contactLinks }, (result) => {
+            resolve(result || { emails: [], whatsapp: [] });
+        });
+    });
 }
 
 async function scrapePageWithDeepScan() {
@@ -131,7 +133,7 @@ async function scrapePageWithDeepScan() {
     // Also perform text-based scanning on the current page for WA
     const initialWA = extractWhatsApp(document.body.innerText, document.documentElement.outerHTML);
 
-    const deepResults = await findContactPages(window.location.hostname);
+    const deepResults = await findContactPages();
 
     // Merge and Deduplicate
     baseData.emails = Array.from(new Set([...baseData.emails, ...deepResults.emails]));

@@ -1,8 +1,8 @@
 # Epics & Stories: OutreachPilot
 
-**Version:** 1.1
-**Build Period:** Feb 24 – Mar 17, 2026
-**Status:** ✅ ALL EPICS COMPLETE — Extension v1.1 Built & Live
+**Version:** 1.3
+**Build Period:** Feb 24 – Mar 22, 2026
+**Status:** ✅ ALL EPICS COMPLETE — Extension v1.3 Built, Security Hardened & BMAD Audited
 
 ---
 
@@ -27,6 +27,11 @@
 
 ### Epic 5: Data Export ✅ COMPLETE
 - [x] **Story 5.1** — CSV Export (Download Results CSV button implemented)
+
+### Epic 6: Hardening & Quality ✅ COMPLETE
+- [x] **Story 6.1** — Functionality Gaps 1–11 (URL validation, rate limiting, CORS fix, WhatsApp E.164, mailto links, checkpoint/resume, Hunter.io, 3-email sequence, targetUrl/Description)
+- [x] **Story 6.2** — Security Gaps (storage.local, API key masking, CSP, DOM sanitization, Canva brand voice)
+- [x] **Story 6.3** — BMAD Code Audit (storage.sync bug fix, parseEmailSequence bug fix, HunterService error logging)
 
 ---
 
@@ -246,6 +251,53 @@
 
 **Acceptance Criteria:**
 - [x] "Download Results (CSV)" button appears after Autonomous Mode completes
-- [x] CSV contains all results: URL, Status, Score, Contact Email, Email Draft
+- [x] CSV contains all results: URL, PBN Detected, Score, Emails, WhatsApp, Social Profiles, Email_1, Email_2, Email_3, Model Used
 - [x] CSV is properly escaped for Excel compatibility
 - [x] Download triggers immediately on button click (client-side, no API required)
+
+---
+
+## Epic 6: Hardening & Quality ✅ COMPLETE
+
+### Story 6.1 — Functionality Gaps (11 fixes)
+
+**Goal:** Fix all 11 functionality gaps identified in the v1.1 audit.
+
+**Acceptance Criteria:**
+- [x] **Gap 1** — URL validation: `new URL()` + Set dedup before agent starts
+- [x] **Gap 2** — Rate limiting: configurable `batchDelayMs` (default 2000ms) between URLs
+- [x] **Gap 3/9** — Email prompt quality: `targetUrl` + `targetDescription` injected into all prompts
+- [x] **Gap 4** — Persistent storage: checkpoint saved to `chrome.storage.local` after every URL
+- [x] **Gap 5** — Resume capability: "Resume from URL X/Y" button reads checkpoint; validates same URL batch
+- [x] **Gap 6** — CORS fix: `findContactPages` in content.js delegates all fetches to background.js via `fetchContactPages` message
+- [x] **Gap 7** — WhatsApp E.164: international numbers extracted via `/\+[1-9]\d{6,14}/g` in both content.js and background.js
+- [x] **Gap 8** — mailto: links: discovered emails render as clickable `mailto:` links with individual clipboard copy buttons
+- [x] **Gap 10** — Hunter.io: `HunterService.findEmails(domain, apiKey)` called when no emails found on page
+- [x] **Gap 11** — 3-email sequence: `generateEmailSequence()` implemented on all 9 providers; parsed via positional indexing; tab UI in popup; Email_1/2/3 in CSV
+
+---
+
+### Story 6.2 — Security Gaps
+
+**Goal:** Harden the extension against the 8 security gaps identified in audit.
+
+**Acceptance Criteria:**
+- [x] **Gap 1** — API keys stored in `chrome.storage.local` (not sync); auto-migrated from sync on first load
+- [x] **Gap 2** — Host permissions narrowed from `<all_urls>` to `["https://*/*", "http://*/*"]`
+- [x] **Gap 3** — Proxy backend (out of scope — documented known limitation for future Canva-wide rollout)
+- [x] **Gap 4** — DOM sanitization: `pbnReasons` and all AI output inserted via `textContent`, never `innerHTML`; model names use `createElement` in settings.js
+- [x] **Gap 5** — CSP added to manifest.json: `script-src 'self'; object-src 'self'`
+- [x] **Gap 6** — API keys never displayed in settings UI: fields load blank with placeholder "(saved — leave blank to keep)"; save merges, not overwrites
+- [x] **Gap 7** — Bluesminds/Straico: out of scope (user's choice to configure)
+- [x] **Gap 8** — Canva brand voice in all email prompts: HUMAN / INSPIRING / EMPOWERING pillars + hard rules across all 9 LLM providers
+
+---
+
+### Story 6.3 — BMAD Code Audit
+
+**Goal:** Fix all real bugs found in the BMAD (Break-Map-Analyze-Do) code review.
+
+**Acceptance Criteria:**
+- [x] **Bug 1 (CRITICAL)** — `background.js` message handler changed from `chrome.storage.sync.get` to `chrome.storage.local.get` — all AI calls now read the correct storage location
+- [x] **Bug 2 (HIGH)** — `parseEmailSequence()` rewritten to use positional indexing (`parts[1]`, `parts[2]`, `parts[3]`) — immune to LLM preamble text before first `=== EMAIL 1 ===` marker
+- [x] **Bug 3 (LOW)** — `HunterService.findEmails()` catch block now logs `console.error("[HunterService] findEmails failed:", err)` for debuggability

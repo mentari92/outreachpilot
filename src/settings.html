@@ -242,6 +242,12 @@
         </div>
 
         <div class="field">
+            <label>Hunter.io API Key <span style="font-weight:400;color:#94a3b8;">(optional — email discovery fallback)</span></label>
+            <input type="password" id="hunterio-key" placeholder="Enter Hunter.io API key">
+            <p class="hint">Used when no emails are found on a site during batch processing.</p>
+        </div>
+
+        <div class="field">
             <label>Hugging Face Token</label>
             <input type="password" id="huggingface-key" placeholder="hf_...">
             <input type="text" id="huggingface-model" class="model-id"
@@ -266,11 +272,20 @@
     </div>
 
     <div class="section">
+        <h2>Batch Processing</h2>
+        <div class="field">
+            <label>Delay Between URLs (ms)</label>
+            <input type="number" id="batch-delay" placeholder="2000" min="500" step="500">
+            <p class="hint">Minimum delay between each URL. Increase if sites are blocking the scraper. Default: 2000ms.</p>
+        </div>
+    </div>
+
+    <div class="section">
         <h2>Personalization</h2>
         <div class="field">
             <label>Output Language</label>
             <input type="text" id="email-language" placeholder="e.g. English, Indonesian, Tagalog, Spanish...">
-            <p class="hint">Type ANY language for the generated outreach email.</p>
+            <p class="hint">Language for all generated outreach emails. Leave blank to use English.</p>
         </div>
         <div class="field">
             <label>Your Name</label>
@@ -280,6 +295,17 @@
             <label>Email Signature</label>
             <textarea id="user-signature"
                 placeholder="Best regards,&#10;Mentari Rahman&#10;SEO Outreach Specialist"></textarea>
+        </div>
+        <div class="field">
+            <label>Your Product / Landing Page URL</label>
+            <input type="url" id="target-url" placeholder="https://canva.com/...">
+            <p class="hint">Injected into generated emails as the product or page you're pitching.</p>
+        </div>
+        <div class="field">
+            <label>Value Proposition</label>
+            <textarea id="target-description"
+                placeholder="e.g. Canva helps teams create stunning visuals 10x faster with drag-and-drop design tools."></textarea>
+            <p class="hint">Brief description of what you offer — included in the email sequence prompt.</p>
         </div>
     </div>
 

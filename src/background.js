@@ -12,6 +12,7 @@ class BaseProvider {
     static async callAPI(prompt, apiKey) { throw new Error("Not implemented"); }
     static async analyzeWebsite(data, apiKey) { throw new Error("Not implemented"); }
     static async generateEmail(data, apiKey) { throw new Error("Not implemented"); }
+    static async generateEmailSequence(data, apiKey) { throw new Error("Not implemented"); }
 
     static extractJSON(text) {
         const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -21,7 +22,7 @@ class BaseProvider {
 
     static getAnalysisPrompt(data) {
         return `
-Analyze this website for link building and SEO outreach. 
+Analyze this website for link building and SEO outreach.
 
 Data provided:
 - Title: ${data.title}
@@ -34,7 +35,7 @@ Data provided:
 - Has "Write for us" / Guest Post link: ${data.hasGuestPostPage ? "YES" : "NO"}
 
 Tasks:
-1. **Identify PBN (Private Blog Network) Indicators**: 
+1. **Identify PBN (Private Blog Network) Indicators**:
    - **Flag 1 (Mixed Niche)**: Does the site cover vastly different topics (e.g. Health, Finance, and Gambling) in the same navigation or body?
    - **Flag 2 (Footprint)**: Check Footer for generic copyright vs real business info.
    - **Flag 3 (Guest Post Focus)**: If a site has a "Write for Us" link and looks like it accepts any niche, it is likely a PBN/Link Farm.
@@ -60,18 +61,129 @@ JSON Structure:
 
     static getEmailPrompt(data) {
         const lang = data.language || "English";
+        const targetSection = data.targetUrl
+            ? `\nWhat we offer: ${data.targetUrl}\nValue proposition: ${data.targetDescription || ""}` : "";
         return `
 Write a short outreach email. You MUST write this email entirely in the following language: ${lang}.
-Site: ${data.title}
-Summary: ${data.summary}
-Sender: ${data.userName || "Mentari"}
+Prospect site: ${data.siteUrl || data.title}
+Site summary: ${data.summary}
+Sender: ${data.userName || "Mentari"}${targetSection}
 Signature: ${data.userSignature || ""}
+
+CANVA BRAND VOICE — follow all rules below without exception:
+
+HUMAN (pillar 1):
+- Write like a real person talking to another real person — warm, simple, conversational
+- Speak directly to the individual, not to "Webmaster" or "Dear Sir/Madam"
+- Open with "Hi [Name]" or "Hey [Name]" — never "Dear", never "To whom it may concern"
+- Use contractions always: we're, it's, you'll, don't, they've, I'd
+- Max 15–20 words per sentence. Short paragraphs, max 2 sentences each.
+- Language must be as simple to understand as Canva is to use
+
+INSPIRING (pillar 2):
+- Lead with something specific and relevant to their site — show you actually read it
+- Never open with "I am writing to inform you" — use a short, direct, human opener instead
+- Motivate them to act — make the opportunity feel exciting and achievable
+- Spark curiosity or joy, not obligation
+- Show, don't tell — demonstrate value with a concrete example or result, not vague claims
+
+EMPOWERING (pillar 3):
+- Make the prospect the hero, not Canva — frame the benefit around what they gain
+- Talk about what their readers/audience will achieve, not about "our platform"
+- Use "Canva" by name and reference the specific URL — never say "our tool" or "our service"
+- Use empowering, uplifting language — celebrate what they can create or accomplish
+- Close with a light, no-pressure call to action
+
+HARD RULES (from brand guidelines):
+- NO "Sincerely", "Best regards", "Warm regards", "Yours faithfully" — use only the provided signature
+- NO bullet points or numbered lists in the email body
+- NO marketing jargon: "leverage", "synergy", "solution", "platform", "touch base", "circle back"
+- NO sentences longer than 20 words
+- Subject line must be specific, benefit-focused, under 10 words — not generic like "Partnership Opportunity"
 
 Format:
 Subject: [subject]
 
 [body]
 `;
+    }
+
+    static getEmailSequencePrompt(data) {
+        const lang = data.language || "English";
+        const targetSection = data.targetUrl
+            ? `\nWhat we offer: ${data.targetUrl}\nValue proposition: ${data.targetDescription || ""}` : "";
+        return `
+Write 3 outreach emails as a sequence. You MUST write all emails entirely in the following language: ${lang}.
+Prospect site: ${data.siteUrl || data.title}
+Site summary: ${data.summary}
+Sender: ${data.userName || "Mentari"}${targetSection}
+Signature: ${data.userSignature || ""}
+
+CANVA BRAND VOICE — follow all rules below without exception:
+
+HUMAN (pillar 1):
+- Write like a real person talking to another real person — warm, simple, conversational
+- Speak directly to the individual, not to "Webmaster" or generic titles
+- Open with "Hi [Name]" or "Hey [Name]" — never "Dear", never "To whom it may concern"
+- Use contractions always: we're, it's, you'll, don't, they've, I'd
+- Max 15–20 words per sentence. Short paragraphs, max 2 sentences each.
+- Language must be as simple to understand as Canva is to use
+
+INSPIRING (pillar 2):
+- Email 1: Lead with something specific and relevant to their site — show you actually read it
+- Never open with "I am writing to inform you" — use a short, direct, human opener
+- Motivate them to act — make the opportunity feel exciting and achievable, not like a chore
+- Show, don't tell — demonstrate value with a concrete example, not vague claims
+
+EMPOWERING (pillar 3):
+- Make the prospect the hero, not Canva — frame benefits around what they gain
+- Talk about what their readers/audience will achieve
+- Use "Canva" by name and reference the specific URL — never say "our tool" or "our platform"
+- Use empowering, uplifting language that celebrates what they can create or accomplish
+- Each email must end with a light, no-pressure call to action
+
+SEQUENCE TONE VARIATION:
+- Email 1 (Day 0): Inspiring + warm — spark curiosity, make a clear ask
+- Email 2 (Day 5–7): Playful + brief — a friendly nudge, not pushy. Add a new insight or tip.
+- Email 3 (Day 12–14): Heartwarming + human — close the loop gracefully, leave them with a smile
+
+HARD RULES:
+- NO "Sincerely", "Best regards", "Warm regards" — use only the provided signature
+- NO bullet points or numbered lists inside any email body
+- NO jargon: "leverage", "synergy", "solution", "platform", "touch base", "circle back"
+- NO sentences longer than 20 words
+- Subject lines must be specific and benefit-focused, under 10 words — never "Partnership Opportunity"
+
+Generate:
+- Email 1 (Day 0 — Initial pitch): Introduce yourself and make the ask.
+- Email 2 (Day 5-7 — Follow-up): Brief, friendly follow-up if no reply.
+- Email 3 (Day 12-14 — Final check-in): Last attempt, no pressure.
+
+Format each email exactly like this:
+=== EMAIL 1 ===
+Subject: [subject]
+
+[body]
+
+=== EMAIL 2 ===
+Subject: [subject]
+
+[body]
+
+=== EMAIL 3 ===
+Subject: [subject]
+
+[body]
+`;
+    }
+
+    static parseEmailSequence(text) {
+        const parts = text.split(/===\s*EMAIL\s*\d+\s*===/i);
+        return [
+            (parts[1] || "").trim(),
+            (parts[2] || "").trim(),
+            (parts[3] || "").trim()
+        ];
     }
 }
 
@@ -100,6 +212,11 @@ class GeminiProvider extends BaseProvider {
     static async generateEmail(data, apiKey, modelId) {
         const text = await this.callAPI(this.getEmailPrompt(data), apiKey, modelId);
         return { email: text.trim() };
+    }
+
+    static async generateEmailSequence(data, apiKey, modelId) {
+        const text = await this.callAPI(this.getEmailSequencePrompt(data), apiKey, modelId);
+        return { emailSequence: this.parseEmailSequence(text) };
     }
 }
 
@@ -138,6 +255,11 @@ class OpenAIProvider extends BaseProvider {
         const text = await this.callAPI(this.getEmailPrompt(data), apiKey, "You are an expert outreach writer.", modelId);
         return { email: text.trim() };
     }
+
+    static async generateEmailSequence(data, apiKey, modelId) {
+        const text = await this.callAPI(this.getEmailSequencePrompt(data), apiKey, "You are an expert outreach writer.", modelId);
+        return { emailSequence: this.parseEmailSequence(text) };
+    }
 }
 
 class ClaudeProvider extends BaseProvider {
@@ -152,7 +274,7 @@ class ClaudeProvider extends BaseProvider {
             },
             body: JSON.stringify({
                 model: modelId || "claude-3-5-sonnet-latest",
-                max_tokens: 1024,
+                max_tokens: 2048,
                 system: systemPrompt,
                 messages: [{ role: "user", content: prompt }]
             })
@@ -173,6 +295,11 @@ class ClaudeProvider extends BaseProvider {
     static async generateEmail(data, apiKey, modelId) {
         const text = await this.callAPI(this.getEmailPrompt(data), apiKey, "You are an expert outreach writer.", modelId);
         return { email: text.trim() };
+    }
+
+    static async generateEmailSequence(data, apiKey, modelId) {
+        const text = await this.callAPI(this.getEmailSequencePrompt(data), apiKey, "You are an expert outreach writer.", modelId);
+        return { emailSequence: this.parseEmailSequence(text) };
     }
 }
 
@@ -211,6 +338,11 @@ class GrokProvider extends BaseProvider {
         const text = await this.callAPI(this.getEmailPrompt(data), apiKey, "You are an expert outreach writer.", modelId);
         return { email: text.trim() };
     }
+
+    static async generateEmailSequence(data, apiKey, modelId) {
+        const text = await this.callAPI(this.getEmailSequencePrompt(data), apiKey, "You are an expert outreach writer.", modelId);
+        return { emailSequence: this.parseEmailSequence(text) };
+    }
 }
 
 class DeepSeekProvider extends BaseProvider {
@@ -248,6 +380,11 @@ class DeepSeekProvider extends BaseProvider {
         const text = await this.callAPI(this.getEmailPrompt(data), apiKey, "You are an expert outreach writer.", modelId);
         return { email: text.trim() };
     }
+
+    static async generateEmailSequence(data, apiKey, modelId) {
+        const text = await this.callAPI(this.getEmailSequencePrompt(data), apiKey, "You are an expert outreach writer.", modelId);
+        return { emailSequence: this.parseEmailSequence(text) };
+    }
 }
 
 class OpenRouterProvider extends BaseProvider {
@@ -261,7 +398,7 @@ class OpenRouterProvider extends BaseProvider {
                 'HTTP-Referer': 'https://github.com/outreachpilot'
             },
             body: JSON.stringify({
-                model: modelId || "openai/gpt-4o-mini", // Fallback fast model for OpenRouter
+                model: modelId || "openai/gpt-4o-mini",
                 messages: [
                     { role: "system", content: systemPrompt },
                     { role: "user", content: prompt }
@@ -286,6 +423,11 @@ class OpenRouterProvider extends BaseProvider {
         const text = await this.callAPI(this.getEmailPrompt(data), apiKey, "You are an expert outreach writer.", modelId);
         return { email: text.trim() };
     }
+
+    static async generateEmailSequence(data, apiKey, modelId) {
+        const text = await this.callAPI(this.getEmailSequencePrompt(data), apiKey, "You are an expert outreach writer.", modelId);
+        return { emailSequence: this.parseEmailSequence(text) };
+    }
 }
 
 class HuggingFaceProvider extends BaseProvider {
@@ -300,7 +442,7 @@ class HuggingFaceProvider extends BaseProvider {
             },
             body: JSON.stringify({
                 inputs: prompt,
-                parameters: { max_new_tokens: 500 }
+                parameters: { max_new_tokens: 1000 }
             })
         });
         if (!response.ok) {
@@ -319,6 +461,11 @@ class HuggingFaceProvider extends BaseProvider {
     static async generateEmail(data, apiKey, modelId) {
         const text = await this.callAPI(this.getEmailPrompt(data), apiKey, modelId);
         return { email: text.trim() };
+    }
+
+    static async generateEmailSequence(data, apiKey, modelId) {
+        const text = await this.callAPI(this.getEmailSequencePrompt(data), apiKey, modelId);
+        return { emailSequence: this.parseEmailSequence(text) };
     }
 }
 
@@ -366,9 +513,68 @@ class StraicoProvider extends BaseProvider {
         const text = await this.callAPI(this.getEmailPrompt(data), apiKey, "You are an expert outreach writer.", modelId);
         return { email: text.trim() };
     }
+
+    static async generateEmailSequence(data, apiKey, modelId) {
+        const text = await this.callAPI(this.getEmailSequencePrompt(data), apiKey, "You are an expert outreach writer.", modelId);
+        return { emailSequence: this.parseEmailSequence(text) };
+    }
 }
 
-// --- LLM Factory ---
+// --- Background-side extraction helpers (used for CORS-free contact page fetching) ---
+
+function bgExtractEmails(text) {
+    const standard = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
+    const obfuscated = (text.match(/[a-zA-Z0-9._%+-]+\s*[\[\(]\s*at\s*[\]\)]\s*[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi) || [])
+        .map(e => e.replace(/\s*[\[\(]\s*at\s*[\]\)]\s*/i, '@'));
+    return Array.from(new Set([...standard, ...obfuscated]));
+}
+
+function bgExtractWhatsApp(text, html) {
+    const waNumbers = [];
+    // URL-based: wa.me / whatsapp.com/send
+    const waLinkMatches = (html || "").match(/href="[^"]*(?:wa\.me|whatsapp\.com\/send)[^"]*"/g) || [];
+    waLinkMatches.forEach(m => {
+        const num = m.match(/wa\.me\/(\d+)/) || m.match(/phone=(\d+)/);
+        if (num) waNumbers.push(num[1]);
+    });
+    // Indonesian numbers
+    const idMatches = text.match(/(?:\+62|62|0)8[1-9][0-9]{7,11}/g) || [];
+    idMatches.forEach(num => {
+        let clean = num.replace(/\D/g, '');
+        if (clean.startsWith('0')) clean = '62' + clean.substring(1);
+        if (clean.length >= 10 && clean.length <= 15) waNumbers.push(clean);
+    });
+    // Generic E.164 international (e.g. +44..., +1..., +81...)
+    const intlMatches = text.match(/\+[1-9]\d{6,14}/g) || [];
+    intlMatches.forEach(num => {
+        const clean = num.replace(/\D/g, '');
+        if (clean.length >= 7 && clean.length <= 15) waNumbers.push(clean);
+    });
+    return Array.from(new Set(waNumbers));
+}
+
+// --- Hunter.io Service ---
+
+class HunterService {
+    static async findEmails(domain, apiKey) {
+        try {
+            const url = `https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${apiKey}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return [];
+            const data = await resp.json();
+            return (data.data?.emails || []).map(e => ({
+                email: e.value,
+                role: e.type,
+                confidence: e.confidence,
+                firstName: e.first_name,
+                lastName: e.last_name
+            }));
+        } catch (err) {
+            console.error("[HunterService] findEmails failed:", err);
+            return [];
+        }
+    }
+}
 
 // --- Autonomous Service ---
 
@@ -380,18 +586,18 @@ class AutonomousService {
     static totalUrls = 0;
     static currentUrl = "";
     static statusMessage = "";
+    static urls = [];
 
-    static async start(urls, settings) {
+    static async start(urls, settings, resumeFromCheckpoint = false) {
         if (this.isRunning) return;
         this.isRunning = true;
-        this.results = [];
-        this.uiResults = [];
         this.totalUrls = urls.length;
-        this.currentIdx = 0;
         this.statusMessage = "Starting autonomous agent...";
+        this.urls = urls;
 
         const model = settings.defaultModel || 'gemini';
         const apiKey = settings.apiKeys ? settings.apiKeys[model] : null;
+        const delayMs = parseInt(settings.batchDelayMs) || 2000;
 
         if (!apiKey) {
             this.statusMessage = "Error: API Key not configured.";
@@ -402,14 +608,33 @@ class AutonomousService {
         const provider = LLMFactory.getProvider(model);
         const customModelId = settings.models ? settings.models[model] : null;
 
-        for (let i = 0; i < urls.length; i++) {
+        // Resume from checkpoint if requested
+        let startIdx = 0;
+        if (resumeFromCheckpoint) {
+            const stored = await chrome.storage.local.get('autonomousCheckpoint');
+            const cp = stored.autonomousCheckpoint;
+            if (cp && cp.urls && cp.urls.join('|') === urls.join('|')) {
+                startIdx = cp.currentIdx || 0;
+                this.results = cp.results || [];
+                this.uiResults = cp.uiResults || [];
+                this.statusMessage = `Resuming from URL ${startIdx + 1}/${urls.length}...`;
+            }
+        } else {
+            this.results = [];
+            this.uiResults = [];
+            await chrome.storage.local.remove('autonomousCheckpoint');
+        }
+        this.currentIdx = startIdx;
+
+        for (let i = startIdx; i < urls.length; i++) {
             if (!this.isRunning) break;
             this.currentIdx = i;
             const url = urls[i];
             this.currentUrl = url;
-            this.statusMessage = `[${i + 1}/${urls.length}] Processing ${url.substring(0, 30)}...`;
+            this.statusMessage = `[${i + 1}/${urls.length}] Processing ${url.substring(0, 40)}...`;
 
             let tabId = null;
+            let hadError = false;
             try {
                 const tab = await chrome.tabs.create({ url, active: false });
                 tabId = tab.id;
@@ -430,32 +655,53 @@ class AutonomousService {
                     chrome.tabs.onUpdated.addListener(listener);
                 });
 
-                await new Promise(r => setTimeout(r, 1000));
+                await new Promise(r => setTimeout(r, delayMs));
 
                 const scrapeData = await chrome.tabs.sendMessage(tab.id, { action: "scrape" });
+
+                // Hunter.io fallback if no emails found on page
+                if ((!scrapeData.emails || scrapeData.emails.length === 0) && settings.apiKeys?.hunterio) {
+                    this.statusMessage = `[${i + 1}/${urls.length}] No emails — trying Hunter.io...`;
+                    const domain = new URL(url).hostname;
+                    const hunterResults = await HunterService.findEmails(domain, settings.apiKeys.hunterio);
+                    if (hunterResults.length > 0) {
+                        scrapeData.emails = hunterResults.map(e => e.email);
+                        scrapeData.hunterData = hunterResults;
+                    }
+                }
 
                 const aiResult = await provider.analyzeWebsite(scrapeData, apiKey, customModelId);
                 aiResult.modelUsed = model;
 
                 if (aiResult.error) throw new Error(aiResult.error);
 
-                let generatedEmail = null;
+                let emailSequence = null;
                 if (aiResult.overallScore >= 60) {
-                    const emailRes = await provider.generateEmail({
+                    const emailRes = await provider.generateEmailSequence({
+                        siteUrl: url,
                         title: aiResult.summary,
                         summary: aiResult.summary,
                         userName: settings.userName,
                         userSignature: settings.userSignature,
-                        language: settings.emailLanguage || "English"
+                        language: settings.emailLanguage || "English",
+                        targetUrl: settings.targetUrl || "",
+                        targetDescription: settings.targetDescription || ""
                     }, apiKey, customModelId);
-                    generatedEmail = emailRes.email;
+                    emailSequence = emailRes.emailSequence;
                 }
 
-                const logData = { ...aiResult, url, ...scrapeData, emailDraft: generatedEmail || "" };
+                const logData = {
+                    ...aiResult, url, ...scrapeData,
+                    emailDraft: emailSequence ? emailSequence[0] : "",
+                    Email_1: emailSequence ? emailSequence[0] : "",
+                    Email_2: emailSequence ? emailSequence[1] : "",
+                    Email_3: emailSequence ? emailSequence[2] : ""
+                };
                 this.results.push(logData);
-                this.uiResults.unshift({ url, aiResult, emailDraft: generatedEmail });
+                this.uiResults.unshift({ url, aiResult, emailSequence });
 
             } catch (err) {
+                hadError = true;
                 const errorMsg = err.message.includes('Receiving end does not exist')
                     ? 'Failed to connect (site blocked bot or loaded too slowly).'
                     : err.message;
@@ -465,12 +711,29 @@ class AutonomousService {
             } finally {
                 if (tabId) await chrome.tabs.remove(tabId);
             }
+
+            // Save checkpoint after each URL processed
+            await chrome.storage.local.set({
+                autonomousCheckpoint: {
+                    urls,
+                    currentIdx: i + 1,
+                    results: this.results,
+                    uiResults: this.uiResults,
+                    savedAt: Date.now()
+                }
+            });
+
+            // Extra backoff delay after errors
+            if (hadError && i < urls.length - 1) {
+                await new Promise(r => setTimeout(r, delayMs * 2));
+            }
         }
 
         if (this.isRunning) {
             this.statusMessage = `✅ Completed processing ${urls.length} URLs!`;
+            await chrome.storage.local.remove('autonomousCheckpoint');
         } else {
-            this.statusMessage = `🛑 Stopped. Processed ${this.currentIdx} URLs.`;
+            this.statusMessage = `🛑 Stopped at URL ${this.currentIdx + 1} of ${urls.length}. Progress saved — you can Resume.`;
         }
         this.isRunning = false;
     }
@@ -487,7 +750,8 @@ class AutonomousService {
             results: this.results,
             uiResults: this.uiResults,
             currentIdx: this.currentIdx,
-            totalUrls: this.totalUrls
+            totalUrls: this.totalUrls,
+            urls: this.urls
         };
     }
 }
@@ -516,33 +780,80 @@ chrome.sidePanel
     .catch((error) => console.error(error));
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    chrome.storage.sync.get(['defaultModel', 'apiKeys', 'models', 'userName', 'userSignature', 'emailLanguage'], (settings) => {
-        const model = settings.defaultModel || 'gemini';
-        const apiKey = settings.apiKeys ? settings.apiKeys[model] : request.apiKey;
-        const customModelId = settings.models ? settings.models[model] : null;
+    // Gap 6: Fetch contact pages from background to bypass CORS restrictions
+    if (request.action === "fetchContactPages") {
+        Promise.all((request.urls || []).map(async url => {
+            try {
+                const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+                const html = await resp.text();
+                return { html, text: html.replace(/<[^>]*>?/gm, ' ') };
+            } catch { return { html: "", text: "" }; }
+        })).then(pages => {
+            const emails = [];
+            const waNumbers = [];
+            pages.forEach(({ html, text }) => {
+                emails.push(...bgExtractEmails(text));
+                waNumbers.push(...bgExtractWhatsApp(text, html));
+            });
+            sendResponse({
+                emails: Array.from(new Set(emails)),
+                whatsapp: Array.from(new Set(waNumbers))
+            });
+        });
+        return true;
+    }
 
-        const provider = LLMFactory.getProvider(model);
+    // Gap 5: Check if a resume checkpoint exists
+    if (request.action === "checkCheckpoint") {
+        chrome.storage.local.get('autonomousCheckpoint', (stored) => {
+            const cp = stored.autonomousCheckpoint;
+            if (cp && cp.currentIdx > 0 && cp.urls && cp.urls.length > 0) {
+                sendResponse({ hasCheckpoint: true, currentIdx: cp.currentIdx, totalUrls: cp.urls.length, urls: cp.urls });
+            } else {
+                sendResponse({ hasCheckpoint: false });
+            }
+        });
+        return true;
+    }
 
-        if (request.action === "analyze") {
-            provider.analyzeWebsite(request.data, apiKey, customModelId)
-                .then(res => {
-                    res.modelUsed = model;
-                    sendResponse(res);
-                })
-                .catch(error => sendResponse({ error: error.message }));
-        } else if (request.action === "generateEmail") {
-            provider.generateEmail(request.data, apiKey, customModelId)
-                .then(sendResponse)
-                .catch(error => sendResponse({ error: error.message }));
-        } else if (request.action === "startAutonomous") {
-            AutonomousService.start(request.urls, settings);
-            sendResponse({ success: true });
-        } else if (request.action === "stopAutonomous") {
-            AutonomousService.stop();
-            sendResponse({ success: true });
-        } else if (request.action === "getAutonomousStatus") {
-            sendResponse(AutonomousService.getStatus());
+    chrome.storage.local.get(
+        ['defaultModel', 'apiKeys', 'models', 'userName', 'userSignature', 'emailLanguage', 'targetUrl', 'targetDescription', 'batchDelayMs'],
+        (settings) => {
+            const model = settings.defaultModel || 'gemini';
+            const apiKey = settings.apiKeys ? settings.apiKeys[model] : request.apiKey;
+            const customModelId = settings.models ? settings.models[model] : null;
+
+            const provider = LLMFactory.getProvider(model);
+
+            if (request.action === "analyze") {
+                provider.analyzeWebsite(request.data, apiKey, customModelId)
+                    .then(res => {
+                        res.modelUsed = model;
+                        sendResponse(res);
+                    })
+                    .catch(error => sendResponse({ error: error.message }));
+            } else if (request.action === "generateEmail") {
+                // Gap 11: Generate full 3-email sequence
+                provider.generateEmailSequence({
+                    ...request.data,
+                    targetUrl: settings.targetUrl || "",
+                    targetDescription: settings.targetDescription || ""
+                }, apiKey, customModelId)
+                    .then(sendResponse)
+                    .catch(error => sendResponse({ error: error.message }));
+            } else if (request.action === "startAutonomous") {
+                AutonomousService.start(request.urls, settings, false);
+                sendResponse({ success: true });
+            } else if (request.action === "resumeAutonomous") {
+                AutonomousService.start(request.urls, settings, true);
+                sendResponse({ success: true });
+            } else if (request.action === "stopAutonomous") {
+                AutonomousService.stop();
+                sendResponse({ success: true });
+            } else if (request.action === "getAutonomousStatus") {
+                sendResponse(AutonomousService.getStatus());
+            }
         }
-    });
+    );
     return true;
 });
