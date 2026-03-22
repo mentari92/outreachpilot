@@ -324,4 +324,4 @@
 - [x] **Bug 4 (HIGH)** — Stop button added to popup.js: dynamically created on agent start, sends `stopAutonomous` to background, removed when agent stops
 - [x] **Bug 5 (HIGH)** — Groq provider added to `background.js` (`GroqProvider` class, `api.groq.com`, default `llama-3.3-70b-versatile`), `settings.js` (API_KEY_PROVIDERS + PROVIDER_FETCH + save/load), and `settings.html` (Groq section with Fetch Models button)
 - [x] **Bug 6 (HIGH)** — Auto-fallback on 429: `callWithFallback()` helper added to `background.js`; tries each provider in order, skips on 429/quota/rate errors; message handler now uses it for `analyze` and `generateEmail` actions
-- [x] **Gap 7 (LOW)** — Google Sheets ID field added to `settings.html` and `settings.js` (save + load)
+- [x] **Gap 7 (LOW)** — Google Sheets ID field removed (field existed but had no implementation — replaced by CSV export)

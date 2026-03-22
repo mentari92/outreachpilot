@@ -103,7 +103,7 @@ Core orchestration logic with 3 main classes:
   - DeepSeek: `GET https://api.deepseek.com/models`
   - Straico: `GET https://api.straico.com/v0/models` — response `data` can be array **or** `{chat:[…], image:[…]}` object; both formats handled via `Object.values().flat()`
   - Hugging Face: no Fetch Models (user enters model name manually)
-- Fields: defaultModel, apiKeys, models (per provider), userName, userSignature, emailLanguage, **targetUrl**, **targetDescription**, **batchDelayMs**, **googleSheetsId**
+- Fields: defaultModel, apiKeys, models (per provider), userName, userSignature, emailLanguage, **targetUrl**, **targetDescription**, **batchDelayMs**
 
 ---
 

@@ -124,8 +124,7 @@ document.getElementById('save').addEventListener('click', () => {
             emailLanguage: document.getElementById('email-language').value.trim(),
             targetUrl: document.getElementById('target-url').value,
             targetDescription: document.getElementById('target-description').value,
-            batchDelayMs: parseInt(document.getElementById('batch-delay').value) || 2000,
-            googleSheetsId: document.getElementById('google-sheets-id').value.trim()
+            batchDelayMs: parseInt(document.getElementById('batch-delay').value) || 2000
         };
 
         // Gap 1: store in local (not sync) to keep API keys on-device
@@ -140,7 +139,7 @@ document.getElementById('save').addEventListener('click', () => {
 
 function loadSettings() {
     // Gap 1: read from local storage
-    chrome.storage.local.get(['defaultModel', 'apiKeys', 'models', 'userName', 'userSignature', 'emailLanguage', 'targetUrl', 'targetDescription', 'batchDelayMs', 'googleSheetsId'], (data) => {
+    chrome.storage.local.get(['defaultModel', 'apiKeys', 'models', 'userName', 'userSignature', 'emailLanguage', 'targetUrl', 'targetDescription', 'batchDelayMs'], (data) => {
         if (data.defaultModel) document.getElementById('default-model').value = data.defaultModel;
 
         // Gap 6: never populate API key fields with actual values — show placeholder instead
@@ -172,7 +171,6 @@ function loadSettings() {
         if (data.targetUrl) document.getElementById('target-url').value = data.targetUrl;
         if (data.targetDescription) document.getElementById('target-description').value = data.targetDescription;
         if (data.batchDelayMs) document.getElementById('batch-delay').value = data.batchDelayMs;
-        if (data.googleSheetsId) document.getElementById('google-sheets-id').value = data.googleSheetsId;
     });
 }
 
