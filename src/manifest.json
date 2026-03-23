@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "OutreachPilot",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "AI-powered outreach pilot for link building teams",
   "icons": {
     "16": "icon.png",
