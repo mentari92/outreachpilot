@@ -2,7 +2,7 @@
 
 **Version:** 1.3
 **Build Period:** Feb 24 – Mar 22, 2026
-**Status:** ✅ ALL EPICS COMPLETE — Extension v1.3 Built, Security Hardened & BMAD Audited
+**Status:** ✅ ALL EPICS COMPLETE — Extension v1.3 Built & Security Hardened
 
 ---
 
@@ -31,7 +31,7 @@
 ### Epic 6: Hardening & Quality ✅ COMPLETE
 - [x] **Story 6.1** — Functionality Gaps 1–11 (URL validation, rate limiting, CORS fix, WhatsApp E.164, mailto links, checkpoint/resume, Hunter.io, 3-email sequence, targetUrl/Description)
 - [x] **Story 6.2** — Security Gaps (storage.local, API key masking, CSP, DOM sanitization, Canva brand voice)
-- [x] **Story 6.3** — BMAD Code Audit (storage.sync bug fix, parseEmailSequence bug fix, HunterService error logging)
+- [x] **Story 6.3** — Code Audit: 3 bugs fixed (storage.sync bug, parseEmailSequence bug, HunterService error logging)
 
 ---
 
@@ -293,9 +293,9 @@
 
 ---
 
-### Story 6.3 — BMAD Code Audit
+### Story 6.3 — Code Audit & Bug Fixes
 
-**Goal:** Fix all real bugs found in the BMAD (Break-Map-Analyze-Do) code review.
+**Goal:** Fix all real bugs found during code review.
 
 **Acceptance Criteria:**
 - [x] **Bug 1 (CRITICAL)** — `background.js` message handler changed from `chrome.storage.sync.get` to `chrome.storage.local.get` — all AI calls now read the correct storage location
@@ -318,7 +318,7 @@
 
 ### Story 6.5 — Post-Launch Bug Fix: Stop Button, Groq Provider, Auto-Fallback, Google Sheets ID
 
-**Goal:** Fix 3 bugs + 1 gap found in second BMAD audit.
+**Goal:** Fix 3 bugs + 1 gap found in second code audit.
 
 **Acceptance Criteria:**
 - [x] **Bug 4 (HIGH)** — Stop button added to popup.js: dynamically created on agent start, sends `stopAutonomous` to background, removed when agent stops

@@ -1,7 +1,7 @@
 # Architecture: OutreachPilot Chrome Extension
 
 **Version:** 1.3
-**Status:** Built — v1.3 Live (Security Hardened + BMAD Audited)
+**Status:** Built — v1.3 Live (Security Hardened)
 
 ---
 

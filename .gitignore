@@ -15,9 +15,9 @@ Brain/.env
 # --- Claude Code ---
 .claude/
 
-# --- Bmad (build orchestration framework, bukan bagian extension) ---
-Bmad/
-Bmad-output/
+# --- Internal Orchestration ---
+B?ad/
+B?ad-output/
 .agent/
 
 # --- Editor & IDE ---

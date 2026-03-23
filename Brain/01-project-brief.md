@@ -1,7 +1,7 @@
 # Project Brief: OutreachPilot — AI-Powered Outreach Co-Pilot
 
 **Version:** 1.3
-**Status:** Built — Extension v1.3 Live (Security Hardened + BMAD Audited)
+**Status:** Built — Extension v1.3 Live (Security Hardened)
 **Team:** Canva Link Building Team — H1 2026 AI Challenge
 
 ---

@@ -1,8 +1,8 @@
-# OutreachPilot ✨
+# OutreachPilot ✨ (v1.3)
 
 **An AI-Powered Co-Pilot for Link Building & Outreach Teams**
 
-> 🏢 **Note:** This is a proprietary internal project created by Mentari and Gelo during their time at Canva for the H1 2026 AI Challenge.
+> 🏢 **Note:** This is a proprietary internal project created by Mentari and Gelo during their time at Canva for the H1 2026 AI Challenge. *Currently v1.3 Live (Security Hardened).*
 
 ---
 
@@ -20,8 +20,8 @@ By automating low-value tasks like repetitive QA checks and basic personalizatio
 
 - 🕵️‍♂️ **PBN Detection:** AI detects Private Blog Network red flags before moving forward with prospect scoring.
 - 💯 **QA Scoring:** Scores each site on Content Quality, Niche Relevance, and Outreach Viability (0–100 scale).
-- 📇 **Deep Contact Extraction:** Automatically finds emails, WhatsApp numbers, and social media profiles (scans main, `/contact`, `/about`, and `/legal` pages).
-- ✉️ **AI Email Generator:** Generates hyper-personalized outreach emails based on site content and your specified tone.
+- 📇 **Deep Contact Extraction:** Automatically finds emails, WhatsApp numbers, and social media profiles (scans main, `/contact`, `/about`, and `/legal` pages) with a **Hunter.io** fallback.
+- ✉️ **3-Email Sequence Generator:** Generates a hyper-personalized 3-email sequence (Day 0, Day 5-7, Day 12-14) based on site content and your specified tone.
 - 🤖 **Autonomous Mode:** Paste a list of URLs and let the extension process them all automatically in the background.
 - 📊 **Google Sheets Integration:** Automatically logs all scan results, scores, and email drafts directly to your Google Sheet with one click.
 - 🧠 **Multi-LLM Support:** Supports 9 top-tier AI providers (Gemini, Claude, OpenAI, Groq, OpenRouter, Grok/xAI, DeepSeek, Hugging Face, Straico) with automatic fallback.
@@ -43,7 +43,8 @@ This extension uses Chrome Manifest V3 and is loaded as an internal unpacked ext
 1. Click the OutreachPilot icon in your Chrome toolbar.
 2. Go to **Settings** (gear icon).
 3. Enter your preferred AI Provider API key (e.g., OpenAI, Anthropic, or OpenRouter).
-4. (Optional) Provide your Google Sheets API setup to enable automatic logging.
+4. (Optional) Provide a Hunter.io API key for the contact extraction fallback.
+5. (Optional) Provide your Google Sheets API setup to enable automatic logging.
 
 ### 3. Usage Modes
 
@@ -56,16 +57,16 @@ This extension uses Chrome Manifest V3 and is loaded as an internal unpacked ext
 #### B. Autonomous Mode (Bulk Processing)
 1. Open the Autonomous Mode inside the extension.
 2. Paste your list of target URLs.
-3. Hit start! The extension will process all URLs automatically in the background, performing PBN checks, scoring, and email generation block-by-block.
+3. Hit start! The extension will process all URLs automatically in the background, performing PBN checks, scoring, and 3-email sequence generation block-by-block.
 4. Download the aggregated results as a CSV once complete.
 
 ---
 
 ## 🛠 Tech Stack
 
-- **Extension Framework:** Chrome Manifest V3
+- **Extension Framework:** Chrome Manifest V3 (Runs as a Side Panel)
 - **Frontend:** Vanilla HTML / CSS / JavaScript (No external UI frameworks to keep it lightweight)
-- **AI Logic:** Multi-LLM integration via separate API keys (Client-side)
+- **AI Logic:** Multi-LLM integration via separate API keys (Client-side, 10 providers supported)
 - **Storage:** Chrome local storage API
 - **Integrations:** Google Sheets API v4
 
